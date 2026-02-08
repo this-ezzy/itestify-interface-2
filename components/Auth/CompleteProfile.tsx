@@ -7,9 +7,11 @@ import { setActiveAuthMethod } from '@/Redux/Slices/authSlice'
 import { CompleteProfileFormValues, completeProfileSchema } from '@/utils/Schemas/register.schema'
 import { Button } from '../ui/button'
 import { User01 } from '@untitled-ui/icons-react'
+import { useUpdateProfile } from '@/app/api/hooks/user'
 
 const CompleteProfile = () => {
     const dispatch = useAppDispatch()
+    const { mutateAsync: handleUpdateProfile } = useUpdateProfile()
     const {
         register,
         handleSubmit,
@@ -25,7 +27,16 @@ const CompleteProfile = () => {
     const onSubmit = async (data: CompleteProfileFormValues) => {
         // Call your API here
         console.log(data)
-        dispatch(setActiveAuthMethod("joinCommunity"))
+        await handleUpdateProfile({
+            first_name: data.firstName,
+            last_name: data.lastName,
+            bio: data.bio,
+            username: data.userName
+        }, {
+            onSuccess: () => {
+                dispatch(setActiveAuthMethod("joinCommunity"))
+            }
+        })
     }
 
 

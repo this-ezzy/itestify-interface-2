@@ -63,8 +63,8 @@ function Button({
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     >
-      {loading && <LoadingSpinner />}
       {children}
+      {loading && <LoadingSpinner size={12} />}
     </Comp>
   )
 }

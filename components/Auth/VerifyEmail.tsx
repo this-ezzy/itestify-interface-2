@@ -6,9 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useAppDispatch } from '@/Redux/store'
 import { setActiveAuthMethod } from '@/Redux/Slices/authSlice'
 import { InputField } from '../shared'
+import { useVerifyEmail } from '@/app/api/hooks/auth'
 
 const VerifyEmail = () => {
     const dispatch = useAppDispatch()
+    const { mutateAsync: handleVerify } = useVerifyEmail()
+
     const {
         register,
         handleSubmit,
@@ -19,9 +22,14 @@ const VerifyEmail = () => {
     })
 
     const onSubmit = async (data: VerifyFormValues) => {
+
         // Call your API here
         console.log(data)
-        dispatch(setActiveAuthMethod("completeProfile"))
+        await handleVerify({ code: data.code }, {
+            onSuccess: () => {
+                dispatch(setActiveAuthMethod("completeProfile"))
+            }
+        })
     }
 
     return (

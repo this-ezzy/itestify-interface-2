@@ -10,14 +10,17 @@ import RegisterForm from '@/components/Auth/RegisterForm'
 import ForgotPasswordForm from '@/components/Auth/ForgotPasswordForm'
 import JoinCommunity from '@/components/Auth/JoinCommunity';
 import CompleteProfile from '@/components/Auth/CompleteProfile';
-import VerifyEmail from '@/components/Auth/VerifyEmai';
+import VerifyEmail from '@/components/Auth/VerifyEmail';
 import { ArrowLeft } from '@untitled-ui/icons-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { is } from 'zod/locales';
+import { useGetParams, useUpdateParams } from '@/hooks';
 
 
 const LoginModal = () => {
+    const { email } = useGetParams(["email"])
+    const decodedEmail = decodeURIComponent(email)
+    const { updateParams } = useUpdateParams()
     const { activeAuthMethod, showAuthModal } = useAppSelector((state) => state.auth)
     const dispatch = useAppDispatch()
     const isLogin = activeAuthMethod === "login"
@@ -31,6 +34,7 @@ const LoginModal = () => {
     const handleClose = () => {
         // Close modal logic here
         dispatch(toggleAuthModal())
+        updateParams({ email: null })
         dispatch(setActiveAuthMethod("login"))
     }
 
@@ -54,7 +58,7 @@ const LoginModal = () => {
             case "verifyEmail":
                 return {
                     title: "Verify your email",
-                    description: "We have sent a 6-digit verification code to work.samsontobie@gmail.com"
+                    description: `We have sent a 6-digit verification code to ${decodedEmail}`
                 }
             case "completeProfile":
                 return {
@@ -72,7 +76,7 @@ const LoginModal = () => {
                     description: ""
                 }
         }
-    }, [activeAuthMethod])
+    }, [activeAuthMethod, decodedEmail])
 
     const handleSetAuthMethod = (method: ActiveAuthModal) => {
         // Dispatch action to set active auth method
@@ -82,7 +86,7 @@ const LoginModal = () => {
 
     const customHeader = useMemo(() => {
         if (isVerifyEmail || isCompleteProfile) {
-            return <CustomHeader page={activeAuthMethod} />
+            return <CustomHeader page={activeAuthMethod} handleSetAuthMethod={handleSetAuthMethod} />
         }
         if (isJoinCommunity) {
             return (
@@ -92,7 +96,7 @@ const LoginModal = () => {
             )
         }
         return null
-    }, [activeAuthMethod, isVerifyEmail, isCompleteProfile, isJoinCommunity])
+    }, [isVerifyEmail, isCompleteProfile, isJoinCommunity, activeAuthMethod, handleSetAuthMethod])
 
     return (
         <CustomDialog
@@ -105,6 +109,7 @@ const LoginModal = () => {
             headerClassName='flex flex-col items-center text-center mb-4 max-w-[400px] mx-auto gap-2'
             showCloseButton={!isVerifyEmail && !isCompleteProfile}
             customHeader={customHeader}
+            disableOutsideClick={true}
         >
 
 
@@ -132,6 +137,7 @@ const LoginModal = () => {
                     </div>
                 </div>
             }
+
             {isLogin && <LoginForm handleSetAuthMethod={handleSetAuthMethod} />}
             {isRegister && <RegisterForm handleSetAuthMethod={handleSetAuthMethod} />}
             {isForgotPassword && <ForgotPasswordForm />}
@@ -147,18 +153,19 @@ export default LoginModal
 
 interface CustomHeaderProps {
     page: ActiveAuthModal
+    handleSetAuthMethod?: (value: ActiveAuthModal) => void
 }
 
-const CustomHeader = ({ page }: CustomHeaderProps) => {
+const CustomHeader = ({ page, handleSetAuthMethod }: CustomHeaderProps) => {
     const currentStep = page === "verifyEmail" ? 1 : 2
     const stepText = currentStep === 1 ? "Step 1/2 — almost there!" : "Step 2/2 — last one!"
     return (
         <div className={cn('flex justify-between w-full items-center', currentStep === 2 && "justify-center")}>
             {
                 currentStep === 1 &&
-                <h2 className='text-base font-medium flex items-center gap-2 cursor-pointer'>
+                <button onClick={() => handleSetAuthMethod?.("register")} className='text-base font-medium flex items-center gap-2 cursor-pointer'>
                     <ArrowLeft /> Back
-                </h2>
+                    </button>
             }
             <p className='text-sm text-success-60 font-medium'>
                 🎉  {stepText}

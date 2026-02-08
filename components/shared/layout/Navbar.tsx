@@ -1,7 +1,7 @@
 'use client'
 import React, { Activity, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { CustomDropDown, InputField, ITestifyLogo } from '..'
+import { CustomDropDown, InputField, ITestifyLogo, LoadingSpinner } from '..'
 import { Search } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '@/Redux/store'
 import { toggleAuthModal } from '@/Redux/Slices/authSlice'
@@ -9,23 +9,27 @@ import { ChevronDown, Menu05, User03 } from '@untitled-ui/icons-react'
 import Image from 'next/image'
 import { AlertIcon, CloseIcon } from '../Icons'
 import { toggleAppMenu } from '@/Redux/Slices/appSlice'
+import useAuth, { clientLogout } from '@/app/api/hooks/auth'
+import { useGetProfile } from '@/app/api/hooks/user'
 
 
 
 const Navbar = () => {
     const dispatch = useAppDispatch()
+    const { data: auth, isLoading: isLoadingAuth } = useAuth()
+    const { data: userProfile, isLoading } = useGetProfile()
     const { showNavTestimonyButton, isAppMenuOpen } = useAppSelector((state) => state.app)
     const [accountAction, setAccountAction] = useState<"profile" | "logout" | null>(null)
-    const isAuth = false
+    const isAuth = !!auth?.token
 
-    const username = "@samsontobie"
+
 
     const handleLoginClick = () => {
         dispatch(toggleAuthModal())
     }
 
-    const signOut = () => {
-        console.log("i signed out")
+    const signOut = async () => {
+        await clientLogout()
     }
 
     const toggleMenu = () => {
@@ -36,55 +40,59 @@ const Navbar = () => {
         <div className='border-b  w-full min-h-18 px-4 md:px-8 flex justify-between items-center gap-4'>
             <div className='flex-1'>
 
-            <ITestifyLogo />
+                <ITestifyLogo />
             </div>
             <div className='flex-1 hidden md:flex justify-center'>
 
-            <InputField placeholder="Search for anything..." className='bg-neutral-100 h-10' preIcon={<Search />} />
+                <InputField placeholder="Search for anything..." className='bg-neutral-100 h-10' preIcon={<Search />} />
             </div>
+
+            {
+                isLoading || isLoadingAuth ?
+                    <LoadingSpinner size={14} />
+                    :
             <section className='flex items-center justify-end gap-2 md:flex-1'>
                 {
                     isAuth ?
 
+                                <div className='md:flex items-center gap-2 flex-1 hidden ml-auto w-full justify-end'>
+                                    <Activity mode={showNavTestimonyButton ? "visible" : "hidden"}  >
+                                        <Button className='rounded-[14px]'>
+                                            <Image src="/assets/fellowships/write_circle.svg" alt="edit--pen" height={14} width={14} />
+                                            Share your testimony
+                                        </Button>
+                                    </Activity>
 
-                        <div className='md:flex items-center gap-2 flex-1 hidden'>
-                <Activity mode={showNavTestimonyButton ? "visible" : "hidden"}  >
-                    <Button className='rounded-[14px]'>
-                        <Image src="/assets/fellowships/write_circle.svg" alt="edit--pen" height={14} width={14} />
-                        Share your testimony
-                    </Button>
-                </Activity>
-
-                <button className='rounded-full border size-10 shrink-0 flex items-center justify-center'>
+                                    <button className='rounded-full border size-10 shrink-0 flex items-center justify-center'>
                                 <AlertIcon />
-                </button>
-                <User03 />
-                <p>{username}</p>
-                <CustomDropDown
-                    value={accountAction}
-                    align='end'
-                    onChange={(value) => {
-                        setAccountAction(value)
+                                    </button>
+                                    <User03 />
+                                    <p>{userProfile?.username}</p>
+                                    <CustomDropDown
+                                        value={accountAction}
+                                        align='end'
+                                        onChange={(value) => {
+                                            setAccountAction(value)
 
-                        if (value === "profile") {
-                            console.log("Profile")
-                        }
+                                            if (value === "profile") {
+                                                console.log("Profile")
+                                            }
 
-                        if (value === "logout") {
-                            signOut()
-                        }
-                    }}
-                    items={[
-                        { value: "profile", label: "Profile" },
-                        { value: "logout", label: <span className="text-red-500">Logout</span> },
-                    ]}
-                    renderTrigger={() => (
-                        <div className="flex items-center gap-1">
-                            <ChevronDown />
-                        </div>
-                    )}
-                    contentClassName="min-w-[120px]"
-                />
+                                            if (value === "logout") {
+                                                signOut()
+                                            }
+                                        }}
+                                        items={[
+                                            { value: "profile", label: "Profile" },
+                                            { value: "logout", label: <span className="text-red-500">Logout</span> },
+                                        ]}
+                                        renderTrigger={() => (
+                                            <div className="flex items-center gap-1">
+                                                <ChevronDown />
+                                            </div>
+                                        )}
+                                        contentClassName="min-w-[120px]"
+                                    />
                         </div>
 
                         :
@@ -103,6 +111,7 @@ const Navbar = () => {
                         </div>
                 }
             </section>
+            }
         </div>
     )
 }

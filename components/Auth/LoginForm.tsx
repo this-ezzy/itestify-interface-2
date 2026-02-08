@@ -6,13 +6,17 @@ import { InputField } from '../shared'
 import { LoginFormValues, loginSchema } from '@/utils/Schemas/login.schema'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-
+import { useLogin } from '@/app/api/hooks/auth'
+import { useAppDispatch } from '@/Redux/store'
+import { toggleAuthModal } from '@/Redux/Slices/authSlice'
 
 interface FormProps {
     handleSetAuthMethod: (method: ActiveAuthModal) => void
 }
 
 const LoginForm = ({ handleSetAuthMethod }: FormProps) => {
+    const { mutateAsync: handleLogin } = useLogin()
+    const dispatch = useAppDispatch()
     const {
         register,
         handleSubmit,
@@ -23,8 +27,14 @@ const LoginForm = ({ handleSetAuthMethod }: FormProps) => {
     })
 
     const onSubmit = async (data: LoginFormValues) => {
-        // Call your API here
-        console.log(data)
+        await handleLogin({
+            identifier: data.email,
+            password: data.password
+        }, {
+            onSuccess: () => {
+                dispatch(toggleAuthModal())
+            }
+        })
     }
 
     return (
@@ -49,9 +59,7 @@ const LoginForm = ({ handleSetAuthMethod }: FormProps) => {
                                 <span>Your password</span>
                         }
                         rightLabel={
-
-                                <Button variant="link" className='text-xs underline underline-offset-1'>Forgot password?</Button>
-
+                            <Button type='button' variant="link" className='text-xs underline underline-offset-1'>Forgot password?</Button>
                         }
                         placeholder='Enter your password'
                         className='bg-neutral-100 h-12 w-full rounded-2xl'
@@ -67,10 +75,7 @@ const LoginForm = ({ handleSetAuthMethod }: FormProps) => {
                         loading={isSubmitting}
                         className='w-full mt-2.5 h-12 font-bold text-base rounded-2xl!'
                     >
-
-                        {
-                            isSubmitting ? 'Signing you in...' : 'Sign in'
-                        }
+                        Sign in
                     </Button>
                 </form>
             </div>
@@ -80,6 +85,7 @@ const LoginForm = ({ handleSetAuthMethod }: FormProps) => {
                     New to iTestify?
                     <Button
                         onClick={() => handleSetAuthMethod("register")}
+                        disabled={isSubmitting}
                         variant="link"
                         className='  p-0! ml-1 text-neutral-900 font-medium cursor-pointer '>
                         Create an account

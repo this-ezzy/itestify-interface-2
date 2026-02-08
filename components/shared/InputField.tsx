@@ -1,3 +1,4 @@
+'use client'
 import {
     InputGroup,
     InputGroupAddon,
@@ -5,7 +6,8 @@ import {
     InputGroupText,
 } from "@/components/ui/input-group"
 import { cn } from "@/lib/utils"
-import { ReactNode, forwardRef } from "react"
+import { ReactNode, forwardRef, useState } from "react"
+import { Eye, EyeOff } from "lucide-react"
 
 interface Props extends React.ComponentProps<"input"> {
     readonly preIcon?: ReactNode
@@ -16,6 +18,7 @@ interface Props extends React.ComponentProps<"input"> {
     readonly error?: string
     readonly rightLabel?: ReactNode
 }
+
 const InputField = forwardRef<HTMLInputElement, Props>(
     (
         {
@@ -29,16 +32,23 @@ const InputField = forwardRef<HTMLInputElement, Props>(
             required,
             error,
             rightLabel,
+            type,
             ...props
         },
         ref
     ) => {
+        const isPassword = type === "password"
+        const [showPassword, setShowPassword] = useState(false)
+
+        const resolvedType =
+            isPassword && showPassword ? "text" : type ?? "text"
+
     return (
         <div className={cn("grid w-full max-w-sm gap-1", groupClassName)}>
             {label && (
-                <label className="text-sm font-medium text-neutral-600 flex w-full items-center justify-between ">
+                <label className="text-sm font-medium text-neutral-600 flex w-full items-center justify-between">
                     <span>
-                    {label} {required && "*"}
+                        {label} {required && "*"}
                     </span>
                     {rightLabel}
                 </label>
@@ -58,15 +68,33 @@ const InputField = forwardRef<HTMLInputElement, Props>(
 
                 <InputGroupInput
                     ref={ref}
+                    type={resolvedType}
                     placeholder={placeholder}
                     className={inputClassName}
                     aria-invalid={!!error}
                     {...props}
                 />
 
-                {sufIcon && (
+                {/* Password toggle OR custom suffix */}
+                {(isPassword || sufIcon) && (
                     <InputGroupAddon align="inline-end">
-                        <InputGroupText>{sufIcon}</InputGroupText>
+                        <InputGroupText>
+                            {isPassword ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((p) => !p)}
+                                    className="cursor-pointer"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="size-4" />
+                                    ) : (
+                                        <Eye className="size-4" />
+                                    )}
+                                </button>
+                            ) : (
+                                sufIcon
+                            )}
+                        </InputGroupText>
                     </InputGroupAddon>
                 )}
             </InputGroup>
