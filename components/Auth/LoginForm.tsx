@@ -49,6 +49,7 @@ const LoginForm = ({ handleSetAuthMethod }: FormProps) => {
                         groupClassName='max-w-full '
                         required
                         {...register("email")}
+                        inputClassName='h-12 autofill:bg-none'
                         error={errors.email?.message}
 
                     />
@@ -66,6 +67,7 @@ const LoginForm = ({ handleSetAuthMethod }: FormProps) => {
                         groupClassName='max-w-full '
                         required
                         {...register("password")}
+                        inputClassName='h-12 autofill:bg-none'
                         error={errors.password?.message}
 
                     />

@@ -73,6 +73,7 @@ const InputField = forwardRef<HTMLInputElement, Props>(
                     className={inputClassName}
                     aria-invalid={!!error}
                     {...props}
+                    autoComplete="off"
                 />
 
                 {/* Password toggle OR custom suffix */}
