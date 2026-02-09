@@ -44,8 +44,8 @@ export default function PostCard({
 
     const handleAction = (action: string) => {
         console.log(action)
-
     }
+
     return (
         <article className={cn("w-full max-w-full flex items-start gap-2 border-t  ", className)}>
             {/* Header */}

@@ -8,8 +8,8 @@ export const useGetProfile = () => {
     return useQuery({
         queryKey: [QUERY_KEYS.USER.GET_PROFILE],
         queryFn: async () => {
-            const resp = await securedAxios.get<{ data: AuthUser }>(API_URL.USER.PROFILE)
-            return resp.data.data
+            const resp = await securedAxios.get<AuthUser>(API_URL.USER.PROFILE)
+            return resp.data
         }
     })
 }

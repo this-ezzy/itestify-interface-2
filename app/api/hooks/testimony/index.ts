@@ -1,35 +1,43 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
+import { QUERY_KEYS } from "../../queryKeys"
+import { publicAxios } from "@/lib/Axios/public"
+import { API_URL } from "../../url"
+import { QueryParams, TestimoniesResponse, Testimony } from "./types"
+import { sanitizeParams } from "@/utils/sanitizeParams"
 
-export const useGetTestimoniesFeed = () => {
+export const useGetTestimoniesFeed = (params: QueryParams) => {
     return useQuery({
-        queryKey: [],
+        queryKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_FEED],
         queryFn: async () => {
-
+            const resp = await publicAxios.get<TestimoniesResponse>(API_URL.TESTIMONY.GET_TESTIMONY_FEED, { params: sanitizeParams(params) })
+            return resp.data
         }
     })
 }
 
-export const useGetTestimonyDetails = () => {
+export const useGetTestimonyDetails = (id: string) => {
     return useQuery({
-        queryKey: [],
+        queryKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_DETAILS],
         queryFn: async () => {
-
+            const resp = await publicAxios.get<Testimony>(API_URL.TESTIMONY.GET_TESTIMONY_DETAILS(id))
+            return resp.data
         }
     })
 }
 
-export const useGetTestimoniesByUser = () => {
+export const useGetTestimoniesByUser = (params: QueryParams) => {
     return useQuery({
-        queryKey: [],
+        queryKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_BY_USER],
         queryFn: async () => {
-
+            const resp = await publicAxios.get<TestimoniesResponse>(API_URL.TESTIMONY.GET_TESTIMONY_BY_USER, { params: sanitizeParams(params) })
+            return resp.data
         }
     })
 }
 
 export const useCreateTestimony = () => {
     return useMutation({
-        mutationKey: [],
+        mutationKey: [QUERY_KEYS.TESTIMONY.CREATE_TESTIMONY],
         mutationFn: async () => {
 
         }
@@ -38,7 +46,7 @@ export const useCreateTestimony = () => {
 
 export const useDeleteTestimony = () => {
     return useMutation({
-        mutationKey: [],
+        mutationKey: [QUERY_KEYS.TESTIMONY.DELETE_TESTIMONY],
         mutationFn: async () => {
 
         }

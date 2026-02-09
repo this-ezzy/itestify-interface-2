@@ -21,8 +21,8 @@ export const useCreateAccount = () => {
     return useMutation({
         mutationKey: [QUERY_KEYS.AUTH.REGISTER],
         mutationFn: async (params: AuthRegisterReq) => {
-            const resp = await publicAxios.post<{ data: AuthResponse }>(API_URL.AUTH.REGISTER, params)
-            return resp.data.data
+            const resp = await publicAxios.post<AuthResponse>(API_URL.AUTH.REGISTER, params)
+            return resp.data
         },
         onSuccess: (resp) => {
             clientLogin({
@@ -39,8 +39,8 @@ export const useLogin = () => {
     return useMutation({
         mutationKey: [QUERY_KEYS.AUTH.LOGIN],
         mutationFn: async (params: AuthLoginReq) => {
-            const resp = await publicAxios.post<{ data: AuthResponse }>(API_URL.AUTH.LOGIN, params)
-            return resp.data.data
+            const resp = await publicAxios.post<AuthResponse>(API_URL.AUTH.LOGIN, params)
+            return resp.data
         },
         onSuccess: (resp) => {
             clientLogin({

@@ -2,9 +2,9 @@
 import Image from 'next/image'
 import React, { useMemo, useState } from 'react'
 import { Button } from '../ui/button'
-import { FELLOWSHIPS_DATA } from '../shared/layout/Sidebar'
 import { CustomDropDown } from '../shared'
 import { Bell03, BellOff03, Flag03, Heart } from '@untitled-ui/icons-react'
+import { useGetFellowships } from '@/app/api/hooks/fellowships'
 
 interface Props {
     fellowshipId: string
@@ -14,19 +14,20 @@ const FellowshipHeader = ({ fellowshipId }: Props) => {
     const [action, setAction] = useState<string | null>(null)
     const [isNotification, setIsNotification] = useState(false)
     const [isJoined, setIsJoined] = useState(false)
+    const { data: fellowshipData, isLoading } = useGetFellowships()
+
 
     const activeFellowship = useMemo(() => {
-        const fellowship = FELLOWSHIPS_DATA.find((item) => item.slug === fellowshipId)
+        const fellowship = fellowshipData?.find((item) => item.slug === fellowshipId)
         return fellowship
 
-    }, [fellowshipId])
+    }, [fellowshipData, fellowshipId])
 
     if (!activeFellowship) return <></>
 
     const handleAction = (action: string) => {
         console.log(action)
         setAction(action)
-
     }
 
     return (

@@ -120,6 +120,11 @@ securedAxios.interceptors.response.use(
     }
 )
 
+securedAxios.interceptors.response.use(
+    (response) => response.data,   // ✅ only return data
+    (error) => Promise.reject(error)
+)
+
 export default securedAxios
 
 
