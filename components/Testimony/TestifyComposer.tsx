@@ -1,143 +1,198 @@
-// components/testify/TestifyComposer.tsx
 'use client'
 
-import { TestifyComposerProps } from './types'
+import { useState, useCallback } from 'react'
+import { useEditor } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import Underline from '@tiptap/extension-underline'
+
 import FellowshipSelect from './FellowshipSelect'
 import TitleInput from './TitleInput'
 import TestimonyEditor from './TestimonyEditor'
 import ComposerToolbar from './ComposerToolbar'
 import FooterActions from './FooterActions'
 import CustomDialog from '../shared/Modals/CustomDialog'
+
 import { useAppDispatch, useAppSelector } from '@/Redux/store'
 import { toggleTestimonyModal } from '@/Redux/Slices/testimonySlice'
-import { useEffect } from 'react'
-import { useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
+
 import { Button } from '../ui/button'
 import { XClose } from '@untitled-ui/icons-react'
+import { TestimonyPayload, UploadedAttachment } from '@/app/api/hooks/testimony/types'
+
+import CharacterCount from '@tiptap/extension-character-count'
+
+interface Props {
+    onPost: (payload: TestimonyPayload) => Promise<void>
+    onSaveDraft?: (payload: TestimonyPayload) => void
+    onSchedule?: (payload: TestimonyPayload) => void
+    isPosting?: boolean
+}
 
 export default function TestifyComposer({
-    value,
-    onChange,
     onPost,
     onSaveDraft,
     onSchedule,
     isPosting
-}: Readonly<TestifyComposerProps>) {
-    const { showTestimonyModal } = useAppSelector((state) => state.testimony)
-
+}: Readonly<Props>) {
 
     const dispatch = useAppDispatch()
-    const update = (patch: Partial<typeof value>) =>
-        onChange({ ...value, ...patch })
+    const { showTestimonyModal } = useAppSelector((s) => s.testimony)
 
-    const onClose = () => {
-        dispatch(toggleTestimonyModal())
-    }
+    /* --------------------------------- STATE -------------------------------- */
+
+    const [title, setTitle] = useState('')
+    const [fellowshipId, setFellowshipId] = useState<number | undefined>()
+    const [attachments, setAttachments] = useState<UploadedAttachment[]>([])
+
+    /* --------------------------------- EDITOR -------------------------------- */
 
     const editor = useEditor({
-        extensions: [StarterKit, Underline],
-        content: value.content,
+        extensions: [StarterKit, Underline, CharacterCount],
+        content: '',
         editorProps: {
             attributes: {
                 class: 'prose max-w-none min-h-[220px] outline-none'
             }
         },
-        onUpdate({ editor }) {
-            update({ content: editor.getHTML() })
-        },
         immediatelyRender: false
     })
 
-    useEffect(() => {
-        if (!editor) return
-        if (editor.getHTML() !== value.content) {
-            editor.commands.setContent(value.content, { emitUpdate: false })
-        }
-    }, [value.content, editor])
+    const content = editor?.getHTML() ?? ''
 
+    /* --------------------------------- HELPERS -------------------------------- */
+
+    const buildPayload = useCallback(
+        (extra?: Partial<TestimonyPayload>): TestimonyPayload => ({
+            title: title.trim(),
+            body: content,
+            topic: fellowshipId,
+            files: attachments,
+            isDraft: false,
+            scheduledAt: null,
+            ...extra
+        }),
+        [title, content, fellowshipId, attachments]
+    )
+
+    const resetForm = () => {
+        setTitle('')
+        setAttachments([])
+        setFellowshipId(undefined)
+        editor?.commands.clearContent()
+    }
+
+    const close = () => {
+        dispatch(toggleTestimonyModal())
+        resetForm()
+    }
+
+    /* --------------------------------- ATTACH -------------------------------- */
 
     async function handleAttach(files: FileList) {
-        // const uploaded = await Promise.all(
-        //     Array.from(files).map(async (file) => {
-        //         const res = await uploadToS3(file) // your API
-        //         return {
-        //             id: crypto.randomUUID(),
-        //             url: res.url,
-        //             name: file.name,
-        //             size: file.size,
-        //             mime: file.type
-        //         }
-        //     })
-        // )
+        const uploaded: UploadedAttachment[] = await Promise.all(
+            Array.from(files).map(async (file) => {
+                // 👉 plug your upload API here
+                const url = URL.createObjectURL(file)
 
-        // update({
-        //     attachments: [...value.attachments, ...uploaded]
-        // })
+                return {
+                    id: crypto.randomUUID(),
+                    url,
+                    name: file.name,
+                    size: file.size,
+                    mime: file.type
+                }
+            })
+        )
+
+        setAttachments((prev) => [...prev, ...uploaded])
     }
+
+    /* --------------------------------- ACTIONS -------------------------------- */
+
+    const handlePost = async () => {
+        await onPost(buildPayload())
+        close()
+    }
+
+    const handleDraft = () => {
+        onSaveDraft?.(buildPayload({ isDraft: true }))
+    }
+
+    const handleSchedule = () => {
+        onSchedule?.(buildPayload({ scheduledAt: new Date().toISOString() }))
+    }
+
+    const disabled = !title.trim() || !content.trim() || isPosting
+
+    /* --------------------------------- UI -------------------------------- */
+
+    const charCount = editor?.storage?.characterCount?.characters() ?? 0
 
     return (
         <CustomDialog
             isOpen={showTestimonyModal}
-            onClose={onClose}
+            onClose={close}
+            disableOutsideClick
             showCloseButton={false}
-            contentClassName='md:max-w-[650px] w-full p-5'
-            customHeader={<div className="flex items-center justify-between">
-                <div className='flex items-center gap-6'>
-                    <Button className='cursor-pointer size-9!' variant="secondary" onClick={onClose}>
-                        <XClose className='size-6 ' />
-                    </Button>
-                    <h2 className="text-xl font-semibold">Testify!</h2>
-                </div>
+            contentClassName="md:max-w-[650px] w-full p-5 overflow-auto"
+            customHeader={
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                        <Button
+                            variant="secondary"
+                            className="size-9!"
+                            onClick={close}
+                        >
+                            <XClose className="size-6" />
+                        </Button>
+
+                        <h2 className="text-xl font-semibold">Testify!</h2>
+                    </div>
+
                     {onSaveDraft && (
                         <button
-                            onClick={onSaveDraft}
-                        className="text-sm text-neutral-600 font-medium hover:text-black"
+                            onClick={handleDraft}
+                            className="text-sm text-neutral-600 font-medium hover:text-black"
                         >
                             Drafts
                         </button>
                     )}
                 </div>
-}
+            }
         >
-            <div className="w-full space-y-4">
+            <div className="space-y-4">
 
-                {/* Header */}
-
-                <FellowshipSelect
-
-                />
+                <FellowshipSelect onChange={setFellowshipId} />
 
                 <TitleInput
-                    value={value.title}
-                    onChange={(title) => update({ title })}
+                    value={title}
+                    onChange={setTitle}
                 />
 
                 <TestimonyEditor editor={editor} />
 
-                <div className="flex flex-wrap gap-2 mt-2">
-                    {value?.attachments?.map((file) => (
-                        <a
-                            key={file.id}
-                            href={file.url}
-                            target="_blank"
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg border text-sm"
-                        >
-                            📎 {file.name}
-                        </a>
-                    ))}
-                </div>
+                {attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                        {attachments.map((file) => (
+                            <span
+                                key={file.id}
+                                className="px-3 py-2 border rounded-lg text-sm"
+                            >
+                                📎 {file.name}
+                            </span>
+                        ))}
+                    </div>
+                )}
 
-                <div className='flex items-stretch justify-between h-20'>
-                    <ComposerToolbar
-                        editor={editor}
-                        onAttach={handleAttach}
-                    />
-                <FooterActions
-                    onPost={onPost}
-                    onSchedule={onSchedule}
-                    disabled={!value.content || isPosting}
+                <div className="flex justify-between items-center h-20">
+                    <ComposerToolbar editor={editor} onAttach={handleAttach} />
+
+                    <FooterActions
+                        disabled={disabled}
+                        onPost={handlePost}
+                        onSchedule={handleSchedule}
+                        isPosting={isPosting}
+                        charCount={charCount}
                     />
                 </div>
             </div>

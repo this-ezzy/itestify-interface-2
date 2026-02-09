@@ -49,3 +49,21 @@ export interface TestimonyUser {
     bio: string;
     avatar_url?: string
 }
+
+
+export interface UploadedAttachment {
+    id: string
+    url: string
+    name: string
+    size: number
+    mime: string
+}
+
+export interface TestimonyPayload {
+    title: string
+    body: string
+    topic?: number
+    files: UploadedAttachment[]
+    isDraft?: boolean
+    scheduledAt?: string | null
+}

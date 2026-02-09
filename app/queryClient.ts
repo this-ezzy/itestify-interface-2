@@ -5,7 +5,7 @@ import { QueryClient, useQuery } from "@tanstack/react-query"
 const _client = new QueryClient({
     defaultOptions: {
         queries: {
-            retry: false,
+            retry: 1,
             staleTime: 1000 * 60 * 10,
             gcTime: 1000 * 60 * 15,
         },

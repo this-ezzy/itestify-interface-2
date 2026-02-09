@@ -11,25 +11,28 @@ import { useAppDispatch } from '@/Redux/store'
 import Link from 'next/link'
 import { CardType } from '@/components/shared/Feed/PostCard'
 import useInViewport from '@/hooks/useInViewPort'
-import { updateShowNavTestimonyButton } from '@/Redux/Slices/appSlice'
-import { useGetTestimoniesFeed } from '@/app/api/hooks/testimony'
+import { toggleShowAuthModal, updateShowNavTestimonyButton } from '@/Redux/Slices/appSlice'
+import { useCreateTestimony, useGetTestimoniesFeed } from '@/app/api/hooks/testimony'
+import { TestimonyPayload } from '@/app/api/hooks/testimony/types'
+import useAuth from '@/app/api/hooks/auth'
+import { toast } from 'sonner'
 
 
 const Index = () => {
     const [sortBy, setSortBy] = useState<"trending" | "new" | "top">("trending")
+    const { data: auth } = useAuth()
     const [layout, setLayout] = useState<CardType>("card")
     const { data, isLoading } = useGetTestimoniesFeed({})
     const { ref, isInViewport } = useInViewport<HTMLButtonElement>();
     const dispatch = useAppDispatch()
-
-    const [draft, setDraft] = useState({
-        fellowshipId: "",
-        title: '',
-        content: '',
-        showAvatar: true
-    })
+    const { mutateAsync: handleTestimonyUpload, isPending } = useCreateTestimony()
 
     const handleCreateTestimony = () => {
+        if (!auth?.token) {
+            toast.info("Kindly login to make a post")
+            dispatch(toggleShowAuthModal(true))
+            return
+        }
         dispatch(toggleTestimonyModal())
     }
 
@@ -44,6 +47,15 @@ const Index = () => {
 
 
     const feed = data?.data ?? []
+
+    const handlePostTestimony = async (payload: TestimonyPayload) => {
+        await handleTestimonyUpload(payload, {
+            onSuccess: () => {
+                console.log("")
+            }
+        })
+
+    }
 
     return (
         <div className='max-w-app-main mx-auto w-full space-y-6 px-4  lg:px-10 py-10'>
@@ -85,12 +97,12 @@ const Index = () => {
                                                         <PostCard
                                                             author={item.user.username}
                                                             collaborators="{anotherusername}"
-                                                            avatarUrl={item.user.avatar_url ?? "/assets/Avatars Default with Backdrop.svg"}
+                                                            avatarUrl={item.user.avatar_url}
                                                             time="3 mins"
                                                             title={item.title}
                                                             excerpt={item.body}
-                                                            imageUrl="/assets/Image.jpg"
-                                                            category="Health & Healing"
+                                                            media={item.media ?? undefined}
+                                                            category={item.topics?.[0]?.name}
                                                             className='pt-4'
                                                             cardType={layout}
                                                         />
@@ -124,11 +136,10 @@ const Index = () => {
                 </aside>
             </div>
             <TestimonyComposer
-                value={draft}
-                onChange={setDraft}
-                onPost={() => console.log(draft)}
+                onPost={handlePostTestimony}
                 onSaveDraft={() => console.log('save')}
                 onSchedule={() => console.log('schedule')}
+                isPosting={isPending}
             />
         </div>
     )

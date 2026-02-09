@@ -5,6 +5,7 @@ import ReduxProvider from './ReduxProvider'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AboutItestify } from '@/components/About';
 import AppSuspense from '@/components/shared/AppSuspense';
+import { Toaster } from '@/components/ui/sonner';
 
 interface Props {
     children: ReactNode
@@ -16,6 +17,7 @@ const AppProvider = ({ children }: Props) => {
             <QueryProvider>
                 <AppSuspense>
                 <ReduxProvider>
+                        <Toaster position='top-center' />
                     <div className="flex h-svh flex-col overflow-hidden">
                         <Navbar />
                         <main className="flex flex-1 overflow-hidden relative">

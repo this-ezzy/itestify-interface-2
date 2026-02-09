@@ -2,8 +2,10 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "../../queryKeys"
 import { publicAxios } from "@/lib/Axios/public"
 import { API_URL } from "../../url"
-import { QueryParams, TestimoniesResponse, Testimony } from "./types"
+import { QueryParams, TestimoniesResponse, Testimony, TestimonyPayload } from "./types"
 import { sanitizeParams } from "@/utils/sanitizeParams"
+import securedAxios from "@/lib/Axios/secured"
+import { client } from "@/app/queryClient"
 
 export const useGetTestimoniesFeed = (params: QueryParams) => {
     return useQuery({
@@ -37,9 +39,13 @@ export const useGetTestimoniesByUser = (params: QueryParams) => {
 
 export const useCreateTestimony = () => {
     return useMutation({
-        mutationKey: [QUERY_KEYS.TESTIMONY.CREATE_TESTIMONY],
-        mutationFn: async () => {
-
+        mutationKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_FEED],
+        mutationFn: async (params: TestimonyPayload) => {
+            const resp = await securedAxios.post(API_URL.TESTIMONY.CREATE_TESTIMONY, params)
+            return resp
+        },
+        onSuccess: () => {
+            client.get().invalidateQueries({ queryKey: [] })
         }
     })
 }

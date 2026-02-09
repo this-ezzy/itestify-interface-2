@@ -17,7 +17,7 @@ export const API_URL = {
         GET_TESTIMONY_FEED: "/feed",
         GET_TESTIMONY_DETAILS: (id: string) => `/testimonies/${id}`,
         GET_TESTIMONY_BY_USER: "/testimonies",
-        CREATE_TESTIMONY: "/my-testimonies",
+        CREATE_TESTIMONY: "/testimonies",
         DELETE_TESTIMONY: (id: string) => `/testimonies/${id}`
     },
     FELLOWSHIP: {
