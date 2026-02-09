@@ -4,6 +4,7 @@ import QueryProvider from './QueryProvider'
 import ReduxProvider from './ReduxProvider'
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AboutItestify } from '@/components/About';
+import AppSuspense from '@/components/shared/AppSuspense';
 
 interface Props {
     children: ReactNode
@@ -12,14 +13,13 @@ interface Props {
 const AppProvider = ({ children }: Props) => {
     return (
         <GoogleOAuthProvider clientId="<your_client_id>">
-
             <QueryProvider>
+                <AppSuspense>
                 <ReduxProvider>
                     <div className="flex h-svh flex-col overflow-hidden">
                         <Navbar />
                         <main className="flex flex-1 overflow-hidden relative">
-                            <Sidebar />
-
+                                <Sidebar />
                             <section className="flex-1 overflow-y-auto relative  ">
                                 {children}
                                 <div className='h-16'></div>
@@ -30,6 +30,7 @@ const AppProvider = ({ children }: Props) => {
                         <AboutItestify />
                     </div>
                 </ReduxProvider>
+                </AppSuspense>
             </QueryProvider>
         </GoogleOAuthProvider>
     )

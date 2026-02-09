@@ -12,5 +12,21 @@ export const API_URL = {
     },
     USER: {
         PROFILE: "/account/profile"
+    },
+    TESTIMONY: {
+        GET_TESTIMONY_FEED: "/feed",
+        GET_TESTIMONY_DETAILS: (id: string) => `/testimonies/${id}`,
+        GET_TESTIMONY_BY_USER: "/testimonies",
+        CREATE_TESTIMONY: "/my-testimonies",
+        DELETE_TESTIMONY: (id: string) => `/testimonies/${id}`
+    },
+    FELLOWSHIP: {
+        GET_FELLOWSHIPS: "/fellowships",
+        JOIN_FELLOWSHIPS: "/fellowships/join",
+        LEAVE_FELLOWSHIPS: "fellowships/leave"
+    },
+    TOPIC: {
+        GET_ALL_TOPIS: "/topics"
+
     }
 }
