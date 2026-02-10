@@ -22,12 +22,9 @@ const FellowshipBody = () => {
                 <Link href={`/t/1`}>
                     <PostCard
                         author="{newusername}"
-                        collaborators="{anotherusername}"
                         avatarUrl="/assets/Avatars Default with Backdrop.svg"
-                        time="3 mins"
                         title="How Forgiveness Brought Peace Back Into My Home After Months of Conflict"
                         excerpt="There was so much tension between me and my husband that we barely spoke for weeks..."
-                        imageUrl="/assets/Image.jpg"
                         className='pt-4'
                         imageClassName='max-w-full'
                         bodyClassName='max-w-full'
@@ -39,7 +36,6 @@ const FellowshipBody = () => {
                     <PostCard
                         author="{newusername}"
                         avatarUrl="/assets/Avatars Default with Backdrop.svg"
-                        time="3 mins"
                         title="I got the job!!!"
                         excerpt="There was so much tension between me and my husband that we barely spoke for weeks..."
                         className='pt-4'
