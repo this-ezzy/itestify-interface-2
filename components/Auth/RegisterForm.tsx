@@ -9,6 +9,7 @@ import { RegisterFormValues, registerSchema } from "@/utils/Schemas/register.sch
 import { useAppDispatch } from "@/Redux/store"
 import { setActiveAuthMethod } from "@/Redux/Slices/authSlice"
 import { InputField } from "../shared"
+import { useCreateAccount } from "@/app/api/hooks/auth"
 
 
 interface FormProps {
@@ -17,6 +18,8 @@ interface FormProps {
 
 const RegisterForm = ({ handleSetAuthMethod }: FormProps) => {
     const dispatch = useAppDispatch()
+    const { mutateAsync: registerUser } = useCreateAccount()
+
     const {
         register,
         handleSubmit,
@@ -28,8 +31,15 @@ const RegisterForm = ({ handleSetAuthMethod }: FormProps) => {
 
     const onSubmit = async (data: RegisterFormValues) => {
         // Call your API here
-        console.log(data)
-        dispatch(setActiveAuthMethod("verifyEmail"))
+        await registerUser(data, {
+            onSuccess: (resp) => {
+                console.log(resp)
+                dispatch(setActiveAuthMethod("verifyEmail"))
+            },
+            onError: () => {
+
+            }
+        })
     }
 
     return (
@@ -41,7 +51,7 @@ const RegisterForm = ({ handleSetAuthMethod }: FormProps) => {
                 <InputField
                     label="Your email"
                     placeholder="yourname@example.com"
-                    className="bg-neutral-100 h-12 w-full rounded-2xl"
+                    className="bg-neutral-100 h-12 w-full rounded-2xl autofill:bg-neutral-100!"
                     groupClassName="max-w-full"
                     required
                     error={errors.email?.message}
@@ -52,7 +62,7 @@ const RegisterForm = ({ handleSetAuthMethod }: FormProps) => {
                     type="password"
                     label="Your password"
                     placeholder="Enter your password"
-                    className="bg-neutral-100 h-12 w-full rounded-2xl"
+                    className="bg-neutral-100 h-12 w-full rounded-2xl autofill:bg-neutral-100!"
                     groupClassName="max-w-full"
                     required
                     error={errors.password?.message}
@@ -62,11 +72,10 @@ const RegisterForm = ({ handleSetAuthMethod }: FormProps) => {
                 <Button
                     type="submit"
                     loading={isSubmitting}
+                    disabled={isSubmitting || !isValid}
                     className="w-full mt-2.5 h-12 font-bold text-base rounded-2xl"
                 >
-                    {
-                        isSubmitting ? 'Creating your account...' : 'Create Account'
-                    }
+                    Create Account
 
                 </Button>
             </form>
@@ -81,9 +90,8 @@ const RegisterForm = ({ handleSetAuthMethod }: FormProps) => {
                 <p className="text-center font-medium text-base text-neutral-500">
                     Already have an account?
                     <Button
-                        disabled={isSubmitting || !isValid}
-                        loading={isSubmitting}
-                        onClick={() => handleSetAuthMethod("login")}
+                        disabled={isSubmitting}
+                        onClick={() => handleSetAuthMethod("register")}
                         variant="link"
                         className="p-0 ml-1 text-neutral-900 font-medium"
                     >

@@ -10,6 +10,15 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '1214244a5427f71a53f3224f9a618cb3.r2.cloudflarestorage.com',
+        pathname: '/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

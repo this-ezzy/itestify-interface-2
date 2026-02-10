@@ -1,5 +1,5 @@
 'use client'
-import { FeedSorting, PostCard } from '@/components/shared'
+import { FeedSorting, PostCard, PostCardSkeleton } from '@/components/shared'
 import { TestimonyComposer } from '@/components/Testimony'
 import { Button } from '@/components/ui/button'
 import { Briefcase01, ChevronRightDouble, CoinsStacked03, Heart, HeartSquare, MedicalCross, Plane, Plus, TrendUp01 } from '@untitled-ui/icons-react'
@@ -11,23 +11,28 @@ import { useAppDispatch } from '@/Redux/store'
 import Link from 'next/link'
 import { CardType } from '@/components/shared/Feed/PostCard'
 import useInViewport from '@/hooks/useInViewPort'
-import { updateShowNavTestimonyButton } from '@/Redux/Slices/appSlice'
+import { toggleShowAuthModal, updateShowNavTestimonyButton } from '@/Redux/Slices/appSlice'
+import { useCreateTestimony, useGetTestimoniesFeed } from '@/app/api/hooks/testimony'
+import { TestimonyPayload } from '@/app/api/hooks/testimony/types'
+import useAuth from '@/app/api/hooks/auth'
+import { toast } from 'sonner'
 
 
 const Index = () => {
     const [sortBy, setSortBy] = useState<"trending" | "new" | "top">("trending")
+    const { data: auth } = useAuth()
     const [layout, setLayout] = useState<CardType>("card")
+    const { data, isLoading } = useGetTestimoniesFeed({})
     const { ref, isInViewport } = useInViewport<HTMLButtonElement>();
     const dispatch = useAppDispatch()
-
-    const [draft, setDraft] = useState({
-        fellowshipId: "",
-        title: '',
-        content: '',
-        showAvatar: true
-    })
+    const { mutateAsync: handleTestimonyUpload, isPending } = useCreateTestimony()
 
     const handleCreateTestimony = () => {
+        if (!auth?.token) {
+            toast.info("Kindly login to make a post")
+            dispatch(toggleShowAuthModal(true))
+            return
+        }
         dispatch(toggleTestimonyModal())
     }
 
@@ -38,8 +43,19 @@ const Index = () => {
             dispatch(updateShowNavTestimonyButton(true))
 
         }
-    }, [isInViewport])
+    }, [dispatch, isInViewport])
 
+
+    const feed = data?.data ?? []
+
+    const handlePostTestimony = async (payload: TestimonyPayload) => {
+        await handleTestimonyUpload(payload, {
+            onSuccess: () => {
+                toast.success("🙌 Posted! May your testimony strengthen someone’s faith today.")
+            }
+        })
+
+    }
 
     return (
         <div className='max-w-app-main mx-auto w-full space-y-6 px-4  lg:px-10 py-10'>
@@ -61,36 +77,42 @@ const Index = () => {
                             <Plus className='size-4' />
                         </span>
                     </button>
-                    <ul className='flex flex-col gap-4'>
-                        <Link href={`/t/1`}>
-                        <PostCard
-                            author="{newusername}"
-                            collaborators="{anotherusername}"
-                            avatarUrl="/assets/Avatars Default with Backdrop.svg"
-                            time="3 mins"
-                            title="How Forgiveness Brought Peace Back Into My Home After Months of Conflict"
-                            excerpt="There was so much tension between me and my husband that we barely spoke for weeks..."
-                            imageUrl="/assets/Image.jpg"
-                            category="Health & Healing"
-                                className='pt-4'
-                                cardType={layout}
-                            />
-                        </Link>
-                        <Link href={`/t/2`}>
-                        <PostCard
-                            author="{newusername}"
-                            avatarUrl="/assets/Avatars Default with Backdrop.svg"
-                            time="3 mins"
-                            title="I got the job!!!"
-                            excerpt="There was so much tension between me and my husband that we barely spoke for weeks..."
-                            category="Health & Healing"
-                                className='pt-4'
-                                cardType={layout}
-                            />
-                        </Link>
-
-
-                    </ul>
+                    {
+                        isLoading ?
+                            <ul className='space-y-4'>
+                                {
+                                    [1, 2, 3, 4, 5].map((item) => (
+                                        <PostCardSkeleton key={item} className='pt-4' />
+                                    ))
+                                }
+                            </ul>
+                            :
+                            <>
+                                {
+                                    feed.length > 0 ?
+                                        <ul className='flex flex-col gap-4'>
+                                            {
+                                                feed.map((item) => (
+                                                    <Link href={`/t/${item.id}`} key={item.id}>
+                                                        <PostCard
+                                                            author={item.user.username}
+                                                            avatarUrl={item.user.avatar_url}
+                                                            title={item.title}
+                                                            excerpt={item.body}
+                                                            media={item.media ?? undefined}
+                                                            category={item.topics?.[0]?.name}
+                                                            className='pt-4'
+                                                            cardType={layout}
+                                                        />
+                                                    </Link>
+                                                ))
+                                            }
+                                        </ul>
+                                        :
+                                        <NoFeed />
+                                }
+                            </>
+                    }
                 </main>
                 <aside className='border md:block hidden rounded-2xl p-4  sticky top-2 h-fit'>
                     <h3 className='flex items-center gap-2 text-blue-60 text-sm font-medium'> <TrendUp01 /> Trending Fellowships</h3>
@@ -112,11 +134,10 @@ const Index = () => {
                 </aside>
             </div>
             <TestimonyComposer
-                value={draft}
-                onChange={setDraft}
-                onPost={() => console.log(draft)}
+                onPost={handlePostTestimony}
                 onSaveDraft={() => console.log('save')}
                 onSchedule={() => console.log('schedule')}
+                isPosting={isPending}
             />
         </div>
     )
@@ -163,3 +184,13 @@ const trendingFellowships = [
         color: "#C11574"
     },
 ]
+
+
+
+const NoFeed = () => {
+    return (
+        <div className='text-center text-xl'>
+            Sorry, No feeds yet
+        </div>
+    )
+}

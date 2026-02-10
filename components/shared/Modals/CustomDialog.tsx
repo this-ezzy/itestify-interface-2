@@ -21,29 +21,65 @@ interface Props {
     headerClassName?: string
     showCloseButton?: boolean
     customHeader?: ReactNode
+    disableClose?: boolean
+    disableOutsideClick?: boolean
 }
 
-
-const CustomDialog = ({ isOpen, onClose, title, description, children, contentClassName, titleClassName, descriptionClassName, headerClassName, showCloseButton, customHeader }: Props) => {
+const CustomDialog = ({
+    isOpen,
+    onClose,
+    title,
+    description,
+    children,
+    contentClassName,
+    titleClassName,
+    descriptionClassName,
+    headerClassName,
+    showCloseButton,
+    customHeader,
+    disableClose = false,
+    disableOutsideClick = false,
+}: Props) => {
 
     return (
-        <Dialog open={isOpen} onOpenChange={onClose} >
-            <DialogContent className={cn('p-12 max-h-[85vh]', contentClassName)} showCloseButton={showCloseButton}>
-                <div>
-                    {customHeader}
-                </div>
+        <Dialog
+            open={isOpen}
+            onOpenChange={(open) => {
+                // Block closing via escape key or X button if disableClose is true
+                if (disableClose) return
+                if (!open) onClose()
+            }}
+        >
+            <DialogContent
+                className={cn('p-12 max-h-[85vh]', contentClassName)}
+                showCloseButton={showCloseButton && !disableClose}
 
+                // Block backdrop click if disableClose or disableOutsideClick
+                onPointerDownOutside={(e) => {
+                    if (disableClose || disableOutsideClick) e.preventDefault()
+                }}
+                onInteractOutside={(e) => {
+                    if (disableClose || disableOutsideClick) e.preventDefault()
+                }}
+            >
+                {customHeader}
 
-                <DialogHeader className={cn('gap-0', headerClassName)}  >
-                    <DialogTitle className={cn('text-[30px] font-bold', titleClassName)}>{title}</DialogTitle>
-                    <DialogDescription className={cn('text-base text-center font-normal text-neutral-600', descriptionClassName)}>
+                <DialogHeader className={cn('gap-0', headerClassName)}>
+                    <DialogTitle className={cn('text-[30px] font-bold', titleClassName)}>
+                        {title}
+                    </DialogTitle>
+
+                    <DialogDescription
+                        className={cn(
+                            'text-base text-center font-normal text-neutral-600',
+                            descriptionClassName
+                        )}
+                    >
                         {description}
                     </DialogDescription>
                 </DialogHeader>
 
-                <div>
-                    {children}
-                </div>
+                <div>{children}</div>
             </DialogContent>
         </Dialog>
     )

@@ -7,12 +7,15 @@ import { Bold, Italic, Underline, List, Paperclip } from 'lucide-react'
 import EmojiPicker from 'emoji-picker-react';
 import { useState } from 'react';
 
+
 export default function ComposerToolbar({ editor, onAttach }: { editor: Editor | null; onAttach: (files: FileList) => void }) {
     const [openEmoji, setOpenEmoji] = useState(false)
     if (!editor) return null
 
     const btn = (active: boolean) =>
         `p-2 rounded ${active ? 'bg-gray-100' : ''}`
+
+
 
     return (
         <section className='text-neutral-800 font-light space-y-2'>
@@ -46,6 +49,7 @@ export default function ComposerToolbar({ editor, onAttach }: { editor: Editor |
                     <Paperclip size={20} />
                     <input
                         type="file"
+                        accept=''
                         multiple
                         className="hidden"
                         onChange={(e) => {

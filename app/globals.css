@@ -116,7 +116,7 @@
 
   --neutral-25: #FFFFFF;
   --neutral-50: #F2F5F8;
-  --neutral-100: #E1E4EA;
+  --neutral-100: #EEF2F6;
   --neutral-200: #CACFD8;
   --neutral-300: #99A0AE;
   --neutral-400: #717784;
@@ -170,6 +170,7 @@
   --sidebar-border: var(--color-neutral-200);
   --sidebar-ring: oklch(0.556 0 0);
 
+
   --neutral-25: #0E121B;
   --neutral-50: #161B22;
   --neutral-100: #202939;
@@ -218,4 +219,16 @@ html {
 
 button {
   cursor: pointer;
+}
+
+/* light/dark via CSS variables */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--neutral-100) inset !important;
+  -webkit-text-fill-color: var(--neutral-800) !important;
+  caret-color: var(--input-text) !important;
+  transition: background-color 9999s ease-in-out 0s;
+  border-radius: 14px;
 }

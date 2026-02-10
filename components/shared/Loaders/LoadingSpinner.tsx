@@ -1,15 +1,16 @@
-import Image from 'next/image'
 import React from 'react'
+import { Spinner } from "react-activity";
+import "react-activity/dist/library.css";
 
-const LoadingSpinner = () => {
+interface Props {
+    size?: number;
+    color?: string;
+    speed?: number
+}
+
+const LoadingSpinner = ({ size = 20, color = "#727981", speed = 1 }: Props) => {
     return (
-        <Image
-            src="/assets/loader.svg"
-            alt="Loading..."
-            width={25}
-            height={25}
-            className='animate-spin duration-1000'
-        />
+        <Spinner color={color} size={size} speed={speed} animating={true} />
     )
 }
 
