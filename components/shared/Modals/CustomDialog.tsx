@@ -21,8 +21,7 @@ interface Props {
     headerClassName?: string
     showCloseButton?: boolean
     customHeader?: ReactNode
-
-    /** NEW */
+    disableClose?: boolean
     disableOutsideClick?: boolean
 }
 
@@ -38,6 +37,7 @@ const CustomDialog = ({
     headerClassName,
     showCloseButton,
     customHeader,
+    disableClose = false,
     disableOutsideClick = false,
 }: Props) => {
 
@@ -45,20 +45,21 @@ const CustomDialog = ({
         <Dialog
             open={isOpen}
             onOpenChange={(open) => {
+                // Block closing via escape key or X button if disableClose is true
+                if (disableClose) return
                 if (!open) onClose()
             }}
         >
             <DialogContent
                 className={cn('p-12 max-h-[85vh]', contentClassName)}
-                showCloseButton={showCloseButton}
+                showCloseButton={showCloseButton && !disableClose}
 
-                /* 🔑 this blocks backdrop click */
+                // Block backdrop click if disableClose or disableOutsideClick
                 onPointerDownOutside={(e) => {
-                    if (disableOutsideClick) e.preventDefault()
+                    if (disableClose || disableOutsideClick) e.preventDefault()
                 }}
-
                 onInteractOutside={(e) => {
-                    if (disableOutsideClick) e.preventDefault()
+                    if (disableClose || disableOutsideClick) e.preventDefault()
                 }}
             >
                 {customHeader}

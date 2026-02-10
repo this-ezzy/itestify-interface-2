@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -20,6 +20,8 @@ import { XClose } from '@untitled-ui/icons-react'
 import { TestimonyPayload, UploadedAttachment } from '@/app/api/hooks/testimony/types'
 
 import CharacterCount from '@tiptap/extension-character-count'
+import { toast } from 'sonner'
+import Image from 'next/image'
 
 interface Props {
     onPost: (payload: TestimonyPayload) => Promise<void>
@@ -34,6 +36,7 @@ export default function TestifyComposer({
     onSchedule,
     isPosting
 }: Readonly<Props>) {
+    const [charCount, setCharCount] = useState(0)
 
     const dispatch = useAppDispatch()
     const { showTestimonyModal } = useAppSelector((s) => s.testimony)
@@ -62,15 +65,23 @@ export default function TestifyComposer({
     /* --------------------------------- HELPERS -------------------------------- */
 
     const buildPayload = useCallback(
-        (extra?: Partial<TestimonyPayload>): TestimonyPayload => ({
+        (
+            options?: Partial<Pick<TestimonyPayload, "isDraft" | "scheduledAt">>
+        ): TestimonyPayload => {
+            const {
+                isDraft = false,
+                scheduledAt = null,
+            } = options ?? {}
+
+            return {
             title: title.trim(),
             body: content,
             topic: fellowshipId,
             files: attachments,
-            isDraft: false,
-            scheduledAt: null,
-            ...extra
-        }),
+                isDraft,
+                scheduledAt,
+            }
+        },
         [title, content, fellowshipId, attachments]
     )
 
@@ -89,20 +100,31 @@ export default function TestifyComposer({
     /* --------------------------------- ATTACH -------------------------------- */
 
     async function handleAttach(files: FileList) {
-        const uploaded: UploadedAttachment[] = await Promise.all(
-            Array.from(files).map(async (file) => {
-                // 👉 plug your upload API here
-                const url = URL.createObjectURL(file)
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp"]
+        const maxSize = 5 * 1024 * 1024 // 5MB
 
-                return {
-                    id: crypto.randomUUID(),
-                    url,
-                    name: file.name,
-                    size: file.size,
-                    mime: file.type
-                }
-            })
-        )
+        const validFiles = Array.from(files).filter((file) => {
+            if (!allowedTypes.includes(file.type)) {
+                console.warn(`Rejected file type: ${file.name}`)
+                return false
+            }
+            if (file.size > maxSize) {
+                console.warn(`File too large: ${file.name}`)
+                return false
+            }
+            return true
+        })
+
+        if (!validFiles.length) return
+
+        const uploaded: UploadedAttachment[] = validFiles.map((file) => ({
+            id: crypto.randomUUID(),
+            file,
+            name: file.name,
+            size: file.size,
+            mime: file.type,
+            preview: URL.createObjectURL(file),
+        }))
 
         setAttachments((prev) => [...prev, ...uploaded])
     }
@@ -125,13 +147,34 @@ export default function TestifyComposer({
     const disabled = !title.trim() || !content.trim() || isPosting
 
     /* --------------------------------- UI -------------------------------- */
+    useEffect(() => {
+        if (!editor) return
 
-    const charCount = editor?.storage?.characterCount?.characters() ?? 0
+        const updateCount = () => {
+            setCharCount(editor.storage.characterCount.characters())
+        }
+
+        updateCount() // initial
+
+        editor.on('update', updateCount)
+
+        return () => {
+            editor.off('update', updateCount)
+        }
+    }, [editor])
+
+
+    useEffect(() => {
+        return () => {
+            attachments.forEach(f => URL.revokeObjectURL(f.preview))
+        }
+    }, [attachments])
 
     return (
         <CustomDialog
             isOpen={showTestimonyModal}
             onClose={close}
+            disableClose={isPosting}
             disableOutsideClick
             showCloseButton={false}
             contentClassName="md:max-w-[650px] w-full p-5 overflow-auto"
@@ -142,6 +185,7 @@ export default function TestifyComposer({
                             variant="secondary"
                             className="size-9!"
                             onClick={close}
+                            disabled={isPosting}
                         >
                             <XClose className="size-6" />
                         </Button>
@@ -152,7 +196,7 @@ export default function TestifyComposer({
                     {onSaveDraft && (
                         <button
                             onClick={handleDraft}
-                            className="text-sm text-neutral-600 font-medium hover:text-black"
+                            className="text-sm text-neutral-600 font-medium "
                         >
                             Drafts
                         </button>
@@ -174,15 +218,36 @@ export default function TestifyComposer({
                 {attachments.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                         {attachments.map((file) => (
-                            <span
+                            <div
                                 key={file.id}
-                                className="px-3 py-2 border rounded-lg text-sm"
+                                className="relative border rounded-lg p-1 w-32 h-32 flex flex-col items-center justify-center"
                             >
-                                📎 {file.name}
-                            </span>
+                                <Image
+                                    src={file.preview}
+                                    alt={file.name}
+                                    className="object-cover w-full h-full rounded-lg"
+                                    width={70}
+                                    height={70}
+
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setAttachments((prev) =>
+                                            prev.filter((f) => f.id !== file.id)
+                                        )
+                                    }
+                                    className="absolute top-1 size-6 flex items-center justify-center text-sm right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                >
+                                    ✕
+                                </button>
+                                <span className="text-xs mt-1 text-center truncate">{file.name}</span>
+                            </div>
                         ))}
                     </div>
                 )}
+
+
 
                 <div className="flex justify-between items-center h-20">
                     <ComposerToolbar editor={editor} onAttach={handleAttach} />

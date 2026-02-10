@@ -1,7 +1,6 @@
 // components/PostCard.tsx
 'use client'
 
-import Image from "next/image"
 import { CelebrateIcon, ChatCircle, KeyIcon, ShareIcon } from "../Icons"
 import { cn } from "@/lib/utils"
 import { Bookmark, EyeOff, Flag03, MedicalCross } from "@untitled-ui/icons-react"
@@ -10,6 +9,7 @@ import { useState, useMemo } from "react"
 import DOMPurify from "dompurify"
 import MediaGallery from "./MediaGallery"
 import { estimateReadTime } from "@/utils/readTime"
+import CustomImage from "../CustomImage/CustomImage"
 
 export type CardType = "compact" | "card"
 
@@ -21,9 +21,7 @@ export interface TestimonyMedia {
 
 type PostCardProps = {
     readonly author: string
-    readonly collaborators?: string
     readonly avatarUrl?: string
-    readonly time: string
     readonly title: string
     readonly excerpt: string
     readonly media?: TestimonyMedia[]
@@ -32,13 +30,12 @@ type PostCardProps = {
     readonly cardType?: CardType
     readonly imageClassName?: string
     readonly bodyClassName?: string
+    readonly showFullBody?: boolean
 }
 
 export default function PostCard({
     author,
-    collaborators,
     avatarUrl,
-    time,
     title,
     excerpt,
     media = [],
@@ -46,6 +43,7 @@ export default function PostCard({
     className,
     imageClassName,
     bodyClassName,
+    showFullBody,
     cardType = "card"
 }: PostCardProps) {
     const isCompact = cardType === "compact"
@@ -100,7 +98,7 @@ export default function PostCard({
                 {/* Header */}
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
-                        <Image
+                        <CustomImage
                             src={avatarUrl ?? "/assets/Avatars Default with Backdrop.svg"}
                             alt={author}
                             width={32}
@@ -153,7 +151,7 @@ export default function PostCard({
 
                     {/* ------------------ Excerpt ------------------ */}
                     <div
-                        className="mt-3 text-sm text-neutral-500 line-clamp-3"
+                        className={cn("mt-3 text-sm text-neutral-500 line-clamp-3", showFullBody && "line-clamp-none")}
                         dangerouslySetInnerHTML={{
                             __html: DOMPurify.sanitize(excerpt)
                         }}

@@ -34,7 +34,7 @@ export default function FellowshipSelect({
         >
             <SelectTrigger
                 className={cn(
-                    'w-62.5 rounded-full bg-neutral-50 border-none',
+                    'w-50 rounded-full bg-neutral-50 border-none',
                     className
                 )}
             >

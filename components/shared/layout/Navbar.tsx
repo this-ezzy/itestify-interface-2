@@ -7,10 +7,12 @@ import { useAppDispatch, useAppSelector } from '@/Redux/store'
 import { toggleAuthModal } from '@/Redux/Slices/authSlice'
 import { ChevronDown, Menu05, User03 } from '@untitled-ui/icons-react'
 import Image from 'next/image'
-import { AlertIcon, CloseIcon } from '../Icons'
-import { toggleAppMenu } from '@/Redux/Slices/appSlice'
+import { AlertIcon, CloseIcon, WriteCircle } from '../Icons'
+import { toggleAppMenu, toggleShowAuthModal } from '@/Redux/Slices/appSlice'
 import useAuth, { clientLogout } from '@/app/api/hooks/auth'
 import { useGetProfile } from '@/app/api/hooks/user'
+import { toggleTestimonyModal } from '@/Redux/Slices/testimonySlice'
+import { toast } from 'sonner'
 
 
 
@@ -36,6 +38,16 @@ const Navbar = () => {
         dispatch(toggleAppMenu())
     }
 
+    const handleCreateTestimony = () => {
+        if (!auth?.token) {
+            toast.info("Kindly login to make a post")
+            dispatch(toggleShowAuthModal(true))
+            return
+        }
+        dispatch(toggleTestimonyModal())
+    }
+
+
     return (
         <div className='border-b  w-full min-h-18 px-4 md:px-8 flex justify-between items-center gap-4'>
             <div className='flex-1'>
@@ -57,8 +69,8 @@ const Navbar = () => {
 
                                 <div className='md:flex items-center gap-2 flex-1 hidden ml-auto w-full justify-end'>
                                     <Activity mode={showNavTestimonyButton ? "visible" : "hidden"}  >
-                                        <Button className='rounded-[14px]'>
-                                            <Image src="/assets/fellowships/write_circle.svg" alt="edit--pen" height={14} width={14} />
+                                        <Button onClick={handleCreateTestimony} className='rounded-[14px] starting:opacity-0 opacity-100 duration-200 ease-linear'>
+                                            <WriteCircle />
                                             Share your testimony
                                         </Button>
                                     </Activity>

@@ -51,7 +51,7 @@ const Index = () => {
     const handlePostTestimony = async (payload: TestimonyPayload) => {
         await handleTestimonyUpload(payload, {
             onSuccess: () => {
-                console.log("")
+                toast.success("🙌 Posted! May your testimony strengthen someone’s faith today.")
             }
         })
 
@@ -93,12 +93,10 @@ const Index = () => {
                                         <ul className='flex flex-col gap-4'>
                                             {
                                                 feed.map((item) => (
-                                                    <Link href={`/t/1`} key={item.id}>
+                                                    <Link href={`/t/${item.id}`} key={item.id}>
                                                         <PostCard
                                                             author={item.user.username}
-                                                            collaborators="{anotherusername}"
                                                             avatarUrl={item.user.avatar_url}
-                                                            time="3 mins"
                                                             title={item.title}
                                                             excerpt={item.body}
                                                             media={item.media ?? undefined}

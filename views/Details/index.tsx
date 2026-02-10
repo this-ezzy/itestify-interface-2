@@ -1,5 +1,6 @@
 'use client'
-import { CommentCard, PostCard, TextAreaField } from '@/components/shared'
+import { useGetTestimonyDetails } from '@/app/api/hooks/testimony'
+import { CommentCard, LoadingSpinner, PostCard, TextAreaField } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ArrowLeft } from '@untitled-ui/icons-react'
@@ -11,26 +12,38 @@ interface Props {
 }
 
 const Index = ({ testimonyId }: Props) => {
+    const { data, isLoading } = useGetTestimonyDetails(testimonyId)
     const router = useRouter()
     const [focused, setFocused] = useState(false)
     const [value, setValue] = useState("")
     const expanded = focused || value.length > 0
+
+    console.log(testimonyId, "id")
+    console.log(data, "tst data")
+
+    if (isLoading) {
+        return (
+            <div className='mt-8 flex justify-center'>
+                <LoadingSpinner size={30} />
+            </div>
+        )
+    }
+
+    if (!data) return <></>
     return (
         <div className='space-y-8 py-10'>
-
             <button onClick={() => router.back()} className='flex items-center gap-2 '>
                 <ArrowLeft /> Go Back
             </button>
 
             <PostCard
-                author="{newusername}"
-                collaborators="{anotherusername}"
+                author={data?.user.username}
                 avatarUrl="/assets/Avatars Default with Backdrop.svg"
-                time="3 mins"
-                title="How Forgiveness Brought Peace Back Into My Home After Months of Conflict"
-                excerpt="There was so much tension between me and my husband that we barely spoke for weeks..."
-                imageUrl="/assets/Image.jpg"
-                category="Health & Healing"
+                title={data.title}
+                excerpt={data.body}
+                media={data.media ?? undefined}
+                showFullBody={true}
+                category={data.topics?.[0]?.name}
                 className='border-t-0 border-b pb-8'
             />
 
@@ -61,37 +74,18 @@ const Index = ({ testimonyId }: Props) => {
             </section>
 
             <ul className='space-y-4'>
-                <CommentCard
+                {/* <CommentCard
                     author="{newusername}"
                     avatarUrl="/assets/Avatars Default with Backdrop.svg"
                     time="3 mins"
                     excerpt="There was so much tension between me and my husband that we barely spoke for weeks. During one Sunday service, I felt a deep conviction to forgive and let go of pride. The next day, we talked, cried, and prayed together. "
 
-                />
-                <CommentCard
-                    author="{newusername}"
-                    avatarUrl="/assets/Avatars Default with Backdrop.svg"
-                    time="3 mins"
-                    excerpt="There was so much tension between me and my husband that we barely spoke for weeks..."
+                /> */}
+                <NoComment />
 
-                />
-                <CommentCard
-                    author="{newusername}"
-                    avatarUrl="/assets/Avatars Default with Backdrop.svg"
-                    time="3 mins"
-                    excerpt="There was so much tension between me and my husband that we barely spoke for weeks..."
-
-                />
-                <CommentCard
-                    author="{newusername}"
-                    avatarUrl="/assets/Avatars Default with Backdrop.svg"
-                    time="3 mins"
-                    excerpt="There was so much tension between me and my husband that we barely spoke for weeks..."
-
-                />
             </ul>
 
-            <button className='text-sm font-semibold text-neutral-600 bg-none'>15 more comments ...</button>
+            {/* <button className='text-sm font-semibold text-neutral-600 bg-none'>15 more comments ...</button> */}
         </div>
     )
 }

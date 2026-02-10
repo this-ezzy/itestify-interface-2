@@ -40,15 +40,44 @@ export const useGetTestimoniesByUser = (params: QueryParams) => {
 export const useCreateTestimony = () => {
     return useMutation({
         mutationKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_FEED],
+
         mutationFn: async (params: TestimonyPayload) => {
-            const resp = await securedAxios.post(API_URL.TESTIMONY.CREATE_TESTIMONY, params)
-            return resp
+            const formData = new FormData()
+
+            // append text fields
+            formData.append("title", params.title)
+            formData.append("body", params.body)
+            formData.append("isDraft", String(params.isDraft))
+            if (params.topic !== undefined) formData.append("topic", String(params.topic))
+            if (params.scheduledAt) formData.append("scheduledAt", params.scheduledAt)
+
+            // append files exactly like Postman
+            if (params.files?.length) {
+                params.files.forEach((f) => {
+                    // f.file must be the real File object
+                    if (f.file instanceof File) {
+                        // "file" is the field name Postman uses
+                        formData.append("files", f.file, f.name)
+                    }
+                })
+            }
+
+            // send multipart/form-data
+            const resp = await securedAxios.post(API_URL.TESTIMONY.CREATE_TESTIMONY, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            })
+
+            return resp.data
         },
+
         onSuccess: () => {
-            client.get().invalidateQueries({ queryKey: [] })
-        }
+            client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_FEED] })
+        },
     })
 }
+
+
+
 
 export const useDeleteTestimony = () => {
     return useMutation({

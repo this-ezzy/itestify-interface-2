@@ -50,14 +50,15 @@ export interface TestimonyUser {
     avatar_url?: string
 }
 
-
-export interface UploadedAttachment {
+export type UploadedAttachment = {
     id: string
-    url: string
+    file: File   // ⭐ REQUIRED
+    preview: string
     name: string
     size: number
     mime: string
 }
+
 
 export interface TestimonyPayload {
     title: string

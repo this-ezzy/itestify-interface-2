@@ -3,6 +3,7 @@
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useMemo } from "react"
+import CustomImage from "../CustomImage/CustomImage"
 
 export interface MediaItem {
     path: string
@@ -30,7 +31,7 @@ export default function MediaGallery({
     variant = "card",
     className,
     imageClassName
-}: Props) {
+}: Readonly<Props>) {
     const { images, videos, firstImage, hasMedia } = useMemo(() => {
         const images = media.filter((m) => m.type === "image")
         const videos = media.filter((m) => m.type === "video")
@@ -70,6 +71,7 @@ export default function MediaGallery({
     Card → grid layout
     ---------------------------
     */
+    console.log(firstImage, 'firts image')
     return (
         <div className={cn("mt-3 space-y-3", className)}>
             {/* Images grid */}
@@ -83,7 +85,7 @@ export default function MediaGallery({
                     )}
                 >
                     {images.slice(0, 4).map((img, i) => (
-                        <Image
+                        <CustomImage
                             key={i}
                             src={img.url}
                             alt={`media-${i}`}
@@ -91,7 +93,7 @@ export default function MediaGallery({
                             height={400}
                             className={cn(
                                 "w-full object-cover rounded-lg",
-                                images.length === 1 ? "max-h-[420px]" : "h-40",
+                                images.length === 1 ? "max-h-105" : "h-40",
                                 imageClassName
                             )}
                         />
