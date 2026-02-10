@@ -105,11 +105,11 @@ export default function TestifyComposer({
 
         const validFiles = Array.from(files).filter((file) => {
             if (!allowedTypes.includes(file.type)) {
-                console.warn(`Rejected file type: ${file.name}`)
+                toast.error("Unsupported file type!!!")
                 return false
             }
             if (file.size > maxSize) {
-                console.warn(`File too large: ${file.name}`)
+                toast.error("File size too large!!!")
                 return false
             }
             return true
