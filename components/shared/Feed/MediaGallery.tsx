@@ -1,6 +1,5 @@
 'use client'
 
-import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useMemo } from "react"
 import CustomImage from "../CustomImage/CustomImage"
@@ -54,7 +53,7 @@ export default function MediaGallery({
     if (variant === "compact" && firstImage) {
         return (
             <div className="mr-2 h-14 w-18 shrink-0 overflow-hidden rounded-lg">
-                <Image
+                <CustomImage
                     src={firstImage}
                     alt="media"
                     width={72}
@@ -71,7 +70,7 @@ export default function MediaGallery({
     Card → grid layout
     ---------------------------
     */
-    console.log(firstImage, 'firts image')
+
     return (
         <div className={cn("mt-3 space-y-3", className)}>
             {/* Images grid */}
