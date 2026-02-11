@@ -1,5 +1,5 @@
 'use client'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from '@/Redux/store'
 import CustomDialog from '../shared/Modals/CustomDialog'
 import { GoogleLogin } from '@react-oauth/google';
@@ -78,11 +78,9 @@ const LoginModal = () => {
         }
     }, [activeAuthMethod, decodedEmail])
 
-    const handleSetAuthMethod = (method: ActiveAuthModal) => {
-        // Dispatch action to set active auth method
-        // e.g., dispatch(setActiveAuthMethod(method))
+    const handleSetAuthMethod = useCallback((method: ActiveAuthModal) => {
         dispatch(setActiveAuthMethod(method))
-    }
+    }, [dispatch])
 
     const customHeader = useMemo(() => {
         if (isVerifyEmail || isCompleteProfile) {
