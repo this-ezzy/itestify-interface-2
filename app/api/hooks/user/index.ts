@@ -3,6 +3,7 @@ import { QUERY_KEYS } from "../../queryKeys"
 import securedAxios from "@/lib/Axios/secured"
 import { API_URL } from "../../url"
 import { AuthUser } from "../auth/types"
+import { client } from "@/app/queryClient"
 
 export const useGetProfile = () => {
     return useQuery({
@@ -20,6 +21,9 @@ export const useUpdateProfile = () => {
         mutationFn: async (params: Partial<AuthUser>) => {
             const resp = await securedAxios.put(API_URL.USER.PROFILE, params)
             return resp.data
+        },
+        onSuccess: () => {
+            client.get().invalidateQueries({ queryKey: [QUERY_KEYS.USER.GET_PROFILE] })
         }
     })
 }
