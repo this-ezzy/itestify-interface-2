@@ -3,16 +3,20 @@
 
 import { CelebrateIcon, ChatCircle, KeyIcon, ShareIcon } from "../Icons"
 import { cn } from "@/lib/utils"
-import { Bookmark, EyeOff, Flag03, MedicalCross } from "@untitled-ui/icons-react"
+import { Bookmark, EyeOff, Flag03, MedicalCross, Share06 } from "@untitled-ui/icons-react"
 import CustomDropDown from "../CustomDropDown"
 import { useState, useMemo } from "react"
 import DOMPurify from "dompurify"
 import MediaGallery from "./MediaGallery"
 import { estimateReadTime } from "@/utils/readTime"
 import CustomImage from "../CustomImage/CustomImage"
+import { useBookmarkTestimony, useDisLikeTestimony, useLikeTestimony, useRemoveBookmarkTestimony } from "@/app/api/hooks/testimony"
+import { Loader2 } from "lucide-react"
+import useAuth from "@/app/api/hooks/auth"
+import { Testimony } from "@/app/api/hooks/testimony/types"
 
 export type CardType = "compact" | "card"
-
+export type ActionType = "save" | "hide" | "report"
 export interface TestimonyMedia {
     path: string
     type: "image" | "video" | string
@@ -20,39 +24,69 @@ export interface TestimonyMedia {
 }
 
 type PostCardProps = {
-    readonly author: string
-    readonly avatarUrl?: string
-    readonly title: string
-    readonly excerpt: string
-    readonly media?: TestimonyMedia[]
-    readonly category?: string
     readonly className?: string
     readonly cardType?: CardType
     readonly imageClassName?: string
     readonly bodyClassName?: string
     readonly showFullBody?: boolean
+    readonly testimony: Testimony
 }
 
 export default function PostCard({
-    author,
-    avatarUrl,
-    title,
-    excerpt,
-    media = [],
-    category,
     className,
     imageClassName,
     bodyClassName,
     showFullBody,
+    testimony,
     cardType = "card"
 }: PostCardProps) {
+    const { liked, bookmarked, id, title, body, user, topics, media = [], replies_count } = testimony ?? {}
+    const excerpt = body
     const isCompact = cardType === "compact"
+    const author = user?.username
+    const avatarUrl = user?.avatar_url
     const isCard = cardType === "card"
-    const [action, setAction] = useState<string | null>(null)
+    const category = topics?.[0]?.name
+    const [action, setAction] = useState<ActionType | null>(null)
+    const { mutateAsync: handleAddBookmark, isPending: isBookmarking } = useBookmarkTestimony()
+    const { mutateAsync: handleRemoveBookmark, isPending: isRemovingBookmark } = useRemoveBookmarkTestimony()
+    const { mutateAsync: handleLikeTestimony, isPending: isLiking } = useLikeTestimony()
+    const { mutateAsync: handleDislikeTestimony, isPending: isDisliking } = useDisLikeTestimony()
 
-    const handleAction = (value: string) => {
+    const bookmarkItem = async () => {
+        if (bookmarked) {
+            await handleRemoveBookmark(id.toString())
+        } else {
+            await handleAddBookmark(id.toString())
+        }
+    }
+
+    const hideItem = async () => {
+
+    }
+
+    const reportItem = async () => {
+
+    }
+
+    const handleAction = (e: Event, value: ActionType) => {
+        e?.stopPropagation()
+        e?.preventDefault()
+        switch (value) {
+            case "save":
+                bookmarkItem();
+                break
+            case "hide":
+                hideItem();
+                break
+            case "report":
+                reportItem();
+                break
+            default:
+                break;
+
+        }
         setAction(value)
-        console.log(value)
     }
 
     /*
@@ -61,19 +95,48 @@ export default function PostCard({
      --------------------------------------------------
     */
     const { firstImage } = useMemo(() => {
-        const images = media.filter((m) => m.type === "image")
-        const videos = media.filter((m) => m.type === "video")
+        if (!media) return {}
+        const images = media?.filter((m) => m.type === "image")
+        const videos = media?.filter((m) => m.type === "video")
 
         return {
             images,
             videos,
-            firstImage: images[0]?.url,
-            hasMedia: images.length > 0 || videos.length > 0
+            firstImage: images?.[0]?.url,
+            hasMedia: images?.length > 0 || videos.length > 0
         }
     }, [media])
 
     const readTime = estimateReadTime(excerpt)
 
+    const handleCelebrate = async () => {
+        if (liked) {
+            await handleDislikeTestimony(id.toString())
+        } else {
+            await handleLikeTestimony(id.toString())
+        }
+    }
+
+    const handleShare = async (e?: React.MouseEvent<HTMLButtonElement>) => {
+        e?.stopPropagation()
+        e?.preventDefault()
+
+        try {
+            const shareData = {
+                url: `${window.location.origin}/t/${id}`
+            }
+
+            if (navigator.share) {
+                await navigator.share(shareData)
+            } else {
+                // Fallback: copy to clipboard
+                await navigator.clipboard.writeText(shareData.url)
+                alert("Link copied to clipboard")
+            }
+        } catch (error) {
+            console.error("Share failed:", error)
+        }
+    }
     return (
         <article
             className={cn(
@@ -116,10 +179,11 @@ export default function PostCard({
 
                     <CustomDropDown
                         value={action}
+                        showCheck={false}
                         align="end"
                         onChange={handleAction}
                         items={[
-                            { value: "save", icon: <Bookmark />, label: <>Save</> },
+                            { value: "save", icon: <Bookmark className={bookmarked ? "text-orange-500 fill-orange-500" : ""} />, label: <span className={bookmarked ? "text-orange-500" : ""}>{bookmarked ? "Remove" : "Save"}</span>, isLoading: isBookmarking || isRemovingBookmark },
                             { value: "hide", icon: <EyeOff />, label: <>Hide</> },
                             { value: "report", icon: <Flag03 />, label: <>Report</> }
                         ]}
@@ -157,16 +221,24 @@ export default function PostCard({
                         }}
                     />
 
+                </div>
                     {/* ------------------ Actions ------------------ */}
-                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                <div className="mt-4 flex flex-wrap items-center gap-2 relative z-30">
                         <ActionButton
-                            label="Celebrate"
-                            icon={<CelebrateIcon />}
+                        label={liked ? "Celebrated" : "Celebrate"}
+                        icon={isLiking || isDisliking ? <Loader2 className="animate-spin size-4" /> : <CelebrateIcon />}
+                        onClick={handleCelebrate}
+                        className={cn("", liked && "text-orange-500 border-orange-500")}
                         />
-                        <ActionButton icon={<ChatCircle />} />
-                        <ActionButton icon={<KeyIcon />} className="px-1 py-1 size-7!" />
-                        <ActionButton label="Share" icon={<ShareIcon />} />
-                    </div>
+                    <ActionButton icon={<ChatCircle />
+                    }
+                        label={replies_count.toString()}
+                        className="cursor-copy"
+                    />
+                    {/* <ActionButton icon={<KeyIcon />} className="px-1 py-1 size-7!"
+                        onClick={ } /> */}
+                    <ActionButton label="Share" icon={<Share06 className="size-4" />}
+                        onClick={handleShare} />
                 </div>
             </section>
         </article>
@@ -176,16 +248,27 @@ export default function PostCard({
 function ActionButton({
     label,
     icon,
-    className
+    className,
+    onClick
+
 }: {
     readonly label?: string
     readonly icon?: React.ReactNode
     readonly className?: string
+        readonly onClick?: () => void
 }) {
+    const { data } = useAuth()
+
     return (
         <button
+            disabled={!data?.token}
+            onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+                onClick?.()
+            }}
             className={cn(
-                "flex items-center justify-center cursor-pointer gap-1 rounded-full border px-4 py-1 text-sm text-neutral-700 hover:bg-neutral-50",
+                "flex items-center justify-center cursor-pointer gap-1 rounded-full border px-4 py-1 text-sm text-neutral-700 hover:bg-neutral-50 disabled:opacity-50",
                 className
             )}
         >
@@ -194,3 +277,4 @@ function ActionButton({
         </button>
     )
 }
+

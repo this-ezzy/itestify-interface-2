@@ -18,7 +18,11 @@ export const API_URL = {
         GET_TESTIMONY_DETAILS: (id: string) => `/testimonies/${id}`,
         GET_TESTIMONY_BY_USER: "/testimonies",
         CREATE_TESTIMONY: "/testimonies",
-        DELETE_TESTIMONY: (id: string) => `/testimonies/${id}`
+        DELETE_TESTIMONY: (id: string) => `/testimonies/${id}`,
+        LIKE_TESTIMONY: (id: string) => `/engagement/testimonies/${id}/like`,
+        BOOKMARK_TESTIMONY: (id: string) => `/engagement/testimonies/${id}/bookmark`,
+        GET_REPLIES: (id: string) => `/testimonies/${id}/replies`,
+        GET_TESTIMONIES_BY_TOPIC: (topicId: string) => `/topics/${topicId}/testimonies`
     },
     FELLOWSHIP: {
         GET_FELLOWSHIPS: "/fellowships",

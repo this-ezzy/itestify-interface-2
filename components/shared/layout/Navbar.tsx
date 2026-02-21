@@ -83,7 +83,7 @@ const Navbar = () => {
                                     <CustomDropDown
                                         value={accountAction}
                                         align='end'
-                                        onChange={(value) => {
+                                        onChange={(e, value) => {
                                             setAccountAction(value)
 
                                             if (value === "profile") {

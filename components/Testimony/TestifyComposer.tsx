@@ -37,6 +37,7 @@ export default function TestifyComposer({
     isPosting
 }: Readonly<Props>) {
     const [charCount, setCharCount] = useState(0)
+    const [isDraft, setIsDraft] = useState(false)
 
     const dispatch = useAppDispatch()
     const { showTestimonyModal } = useAppSelector((s) => s.testimony)
@@ -66,12 +67,9 @@ export default function TestifyComposer({
 
     const buildPayload = useCallback(
         (
-            options?: Partial<Pick<TestimonyPayload, "isDraft" | "scheduledAt">>
+
         ): TestimonyPayload => {
-            const {
-                isDraft = false,
-                scheduledAt = null,
-            } = options ?? {}
+
 
             return {
             title: title.trim(),
@@ -79,10 +77,9 @@ export default function TestifyComposer({
             topic: fellowshipId,
             files: attachments,
                 isDraft,
-                scheduledAt,
             }
         },
-        [title, content, fellowshipId, attachments]
+        [title, content, fellowshipId, attachments, isDraft]
     )
 
     const resetForm = () => {
@@ -132,17 +129,15 @@ export default function TestifyComposer({
     /* --------------------------------- ACTIONS -------------------------------- */
 
     const handlePost = async () => {
+        console.log(buildPayload(), "build payload")
         await onPost(buildPayload())
         close()
     }
 
     const handleDraft = () => {
-        onSaveDraft?.(buildPayload({ isDraft: true }))
+        setIsDraft(!isDraft)
     }
 
-    const handleSchedule = () => {
-        onSchedule?.(buildPayload({ scheduledAt: new Date().toISOString() }))
-    }
 
     const disabled = !title.trim() || !content.trim() || isPosting
 
@@ -196,9 +191,9 @@ export default function TestifyComposer({
                     {onSaveDraft && (
                         <button
                             onClick={handleDraft}
-                            className="text-sm text-neutral-600 font-medium "
+                            className="text-sm font-medium"
                         >
-                            Drafts
+                            {isDraft ? "Saved" : "Save Draft"}
                         </button>
                     )}
                 </div>
@@ -255,7 +250,6 @@ export default function TestifyComposer({
                     <FooterActions
                         disabled={disabled}
                         onPost={handlePost}
-                        onSchedule={handleSchedule}
                         isPosting={isPosting}
                         charCount={charCount}
                     />

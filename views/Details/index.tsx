@@ -1,5 +1,5 @@
 'use client'
-import { useGetTestimonyDetails } from '@/app/api/hooks/testimony'
+import { useCreateTestimony, useGetReplies, useGetTestimonyDetails } from '@/app/api/hooks/testimony'
 import { CommentCard, LoadingSpinner, PostCard, TextAreaField } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -12,16 +12,16 @@ interface Props {
 }
 
 const Index = ({ testimonyId }: Props) => {
+    const { mutateAsync: addComment, isPending: isCommenting } = useCreateTestimony()
+    const { data: testimonyReplies, isLoading: loadingReplies, hasNextPage, fetchNextPage } = useGetReplies({ id: testimonyId.toString(), limit: 4 })
     const { data, isLoading } = useGetTestimonyDetails(testimonyId)
     const router = useRouter()
     const [focused, setFocused] = useState(false)
     const [value, setValue] = useState("")
     const expanded = focused || value.length > 0
 
-    console.log(testimonyId, "id")
-    console.log(data, "tst data")
 
-    if (isLoading) {
+    if (isLoading || loadingReplies) {
         return (
             <div className='mt-8 flex justify-center'>
                 <LoadingSpinner size={30} />
@@ -30,6 +30,23 @@ const Index = ({ testimonyId }: Props) => {
     }
 
     if (!data) return <></>
+
+    const handleAddComment = async () => {
+        await addComment({
+            parent_id: testimonyId,
+            body: value
+        }, {
+            onSuccess: () => {
+                setValue("")
+                setFocused(false)
+            }
+        })
+    }
+
+    const replies = testimonyReplies?.pages?.flatMap(page => page.results) ?? []
+
+    console.log(replies, "replies")
+
     return (
         <div className='space-y-8 py-10'>
             <button onClick={() => router.back()} className='flex items-center gap-2 '>
@@ -37,13 +54,8 @@ const Index = ({ testimonyId }: Props) => {
             </button>
 
             <PostCard
-                author={data?.user.username}
-                avatarUrl="/assets/Avatars Default with Backdrop.svg"
-                title={data.title}
-                excerpt={data.body}
-                media={data.media ?? undefined}
+                testimony={data}
                 showFullBody={true}
-                category={data.topics?.[0]?.name}
                 className='border-t-0 border-b pb-8'
             />
 
@@ -64,7 +76,9 @@ const Index = ({ testimonyId }: Props) => {
                             <Button variant="secondary" className="rounded-[14px] h-10">
                                 Cancel
                             </Button>
-                            <Button className="rounded-[14px] h-10 ">
+                            <Button
+                                loading={isCommenting}
+                                onClick={handleAddComment} className="rounded-[14px] h-10 ">
                                 Comment
                             </Button>
                         </div>
@@ -73,19 +87,31 @@ const Index = ({ testimonyId }: Props) => {
                 />
             </section>
 
-            <ul className='space-y-4'>
-                {/* <CommentCard
-                    author="{newusername}"
-                    avatarUrl="/assets/Avatars Default with Backdrop.svg"
-                    time="3 mins"
-                    excerpt="There was so much tension between me and my husband that we barely spoke for weeks. During one Sunday service, I felt a deep conviction to forgive and let go of pride. The next day, we talked, cried, and prayed together. "
+            <section>
+                {
+                    replies.length > 0 ?
+                        <ul className='space-y-4'>
+                            {
+                                replies.map((item) => {
+                                    return (
+                                        <CommentCard
+                                            key={item?.id}
+                                            comment={item}
+                                        />
+                                    )
+                                })
+                            }
 
-                /> */}
-                <NoComment />
+                        </ul>
+                        :
+                        <NoComment />
+                }
+            </section>
 
-            </ul>
-
-            {/* <button className='text-sm font-semibold text-neutral-600 bg-none'>15 more comments ...</button> */}
+            {
+                hasNextPage &&
+                <button onClick={() => fetchNextPage()} className='text-sm font-semibold text-neutral-600 bg-none'>load more comments ...</button>
+            }
         </div>
     )
 }

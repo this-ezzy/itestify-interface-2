@@ -9,6 +9,8 @@ import {
     SelectValue
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { useGetAllTopics } from '@/app/api/hooks/topics'
+import { trendingFellowships } from '@/views/Home'
 
 export interface Fellowship {
     id: string
@@ -27,6 +29,7 @@ export default function FellowshipSelect({
     onChange,
     className
 }: Readonly<Props>) {
+    const { data: topicsData, isLoading } = useGetAllTopics()
     return (
         <Select
             value={value}
@@ -34,7 +37,7 @@ export default function FellowshipSelect({
         >
             <SelectTrigger
                 className={cn(
-                    'w-50 rounded-full bg-neutral-50 border-none',
+                    'min-w-40 rounded-full bg-neutral-50 border-none',
                     className
                 )}
             >
@@ -42,33 +45,20 @@ export default function FellowshipSelect({
             </SelectTrigger>
 
             <SelectContent>
-                {fellowShips.map((item) => (
-                    <SelectItem key={item.id} value={item.id}>
+                {topicsData?.map((item) => {
+                    const Icon = trendingFellowships.find((topic) => topic.title.toLowerCase() === item.name.toLowerCase())
+                    return (
+                        <SelectItem key={item.id} value={item.id.toString()}>
                         <div className="flex items-center gap-2">
-                            {item.icon && (
-                <Image
-                                    src={item.icon}
-                                    width={18}
-                                    height={18}
-                                    alt={item.name}
-                />
-                            )}
+                                {Icon &&
+                                    <Icon.icon style={{ color: Icon.color }} />
+                                }
                             <span>{item.name}</span>
                         </div>
                     </SelectItem>
-                ))}
+                    )
+                })}
             </SelectContent>
         </Select>
     )
 }
-
-/* ---------------------------------- DATA ---------------------------------- */
-
-const fellowShips: Fellowship[] = [
-    { id: '1', name: 'Health/Healing', icon: '/assets/medical-cross.svg' },
-    { id: '2', name: 'Finances', icon: '/assets/coins-stacked-03.svg' },
-    { id: '3', name: 'Family', icon: '/assets/heart-square.svg' },
-    { id: '4', name: 'Job', icon: '/assets/briefcase-01.svg' },
-    { id: '5', name: 'Japa/Relocation', icon: '/assets/plane.svg' },
-    { id: '6', name: 'Marriage', icon: '/assets/heart.svg' }
-]

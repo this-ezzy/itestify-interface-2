@@ -12,19 +12,58 @@ import Link from 'next/link'
 import { CardType } from '@/components/shared/Feed/PostCard'
 import useInViewport from '@/hooks/useInViewPort'
 import { toggleShowAuthModal, updateShowNavTestimonyButton } from '@/Redux/Slices/appSlice'
-import { useCreateTestimony, useGetTestimoniesFeed } from '@/app/api/hooks/testimony'
+import { useCreateTestimony, useGetTestimoniesByTopics, useGetTestimoniesFeed } from '@/app/api/hooks/testimony'
 import { TestimonyPayload } from '@/app/api/hooks/testimony/types'
 import useAuth from '@/app/api/hooks/auth'
 import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
+import { useGetParams } from '@/hooks'
 
 
 const Index = () => {
     const [sortBy, setSortBy] = useState<"trending" | "new" | "top">("trending")
     const { data: auth } = useAuth()
     const [layout, setLayout] = useState<CardType>("card")
-    const { data, isLoading } = useGetTestimoniesFeed({})
+    const { topic } = useGetParams(["topic"])
+    const isTopicMode = Boolean(topic)
+
+    const {
+        data: feedData,
+        isLoading: isFeedLoading,
+        fetchNextPage: fetchFeedNextPage,
+        hasNextPage: hasFeedNextPage,
+        isFetchingNextPage: isFetchingFeedNextPage,
+    } = useGetTestimoniesFeed({}, { enabled: !isTopicMode })
+
+    const {
+        data: topicData,
+        isLoading: isTopicLoading,
+        fetchNextPage: fetchTopicNextPage,
+        hasNextPage: hasTopicNextPage,
+        isFetchingNextPage: isFetchingTopicNextPage,
+    } = useGetTestimoniesByTopics(
+        { id: topic },
+        { enabled: isTopicMode }
+
+
+    )
+
+    const data = isTopicMode ? topicData : feedData
+    const isLoading = isTopicMode ? isTopicLoading : isFeedLoading
+    const fetchNextPage = isTopicMode ? fetchTopicNextPage : fetchFeedNextPage
+    const hasNextPage = isTopicMode ? hasTopicNextPage : hasFeedNextPage
+    const isFetchingNextPage = isTopicMode
+        ? isFetchingTopicNextPage
+        : isFetchingFeedNextPage
+
     const { ref, isInViewport } = useInViewport<HTMLButtonElement>();
+    const {
+        ref: loadMoreRef,
+        isInViewport: isLoadMoreVisible
+    } = useInViewport<HTMLDivElement>()
+
     const dispatch = useAppDispatch()
+
     const { mutateAsync: handleTestimonyUpload, isPending } = useCreateTestimony()
 
     const handleCreateTestimony = () => {
@@ -46,7 +85,11 @@ const Index = () => {
     }, [dispatch, isInViewport])
 
 
-    const feed = data?.data ?? []
+    useEffect(() => {
+        if (isLoadMoreVisible && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage()
+        }
+    }, [isLoadMoreVisible, hasNextPage, isFetchingNextPage, fetchNextPage])
 
     const handlePostTestimony = async (payload: TestimonyPayload) => {
         await handleTestimonyUpload(payload, {
@@ -54,8 +97,10 @@ const Index = () => {
                 toast.success("🙌 Posted! May your testimony strengthen someone’s faith today.")
             }
         })
-
     }
+
+    const testimonies =
+        data?.pages?.flatMap((page) => page.results) ?? []
 
     return (
         <div className='max-w-app-main mx-auto w-full space-y-6 px-4  lg:px-10 py-10'>
@@ -89,28 +134,31 @@ const Index = () => {
                             :
                             <>
                                 {
-                                    feed.length > 0 ?
+                                    testimonies.length > 0 ?
                                         <ul className='flex flex-col gap-4'>
                                             {
-                                                feed.map((item) => (
+                                                testimonies.map((item) => (
                                                     <Link href={`/t/${item.id}`} key={item.id}>
                                                         <PostCard
-                                                            author={item.user.username}
-                                                            avatarUrl={item.user.avatar_url}
-                                                            title={item.title}
-                                                            excerpt={item.body}
-                                                            media={item.media ?? undefined}
-                                                            category={item.topics?.[0]?.name}
                                                             className='pt-4'
                                                             cardType={layout}
+                                                            testimony={item}
                                                         />
                                                     </Link>
                                                 ))
                                             }
+                                            <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
+                                                {isFetchingNextPage && (
+                                                    <div className="flex items-center gap-2 text-sm text-neutral-500">
+                                                        <Loader2 className="animate-spin size-4" />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </ul>
                                         :
                                         <NoFeed />
                                 }
+
                             </>
                     }
                 </main>
@@ -146,7 +194,7 @@ const Index = () => {
 export default Index
 
 
-const trendingFellowships = [
+export const trendingFellowships = [
     {
         id: '1',
         title: 'Health/Healing',
@@ -155,7 +203,7 @@ const trendingFellowships = [
     },
     {
         id: '2',
-        title: 'Finances',
+        title: 'Finance',
         icon: CoinsStacked03,
         color: "#E62E05"
     },
