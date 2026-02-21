@@ -8,7 +8,7 @@ import securedAxios from "@/lib/Axios/secured"
 import { client } from "@/app/queryClient"
 
 
-export const useGetTestimoniesFeed = (params: QueryParams) => {
+export const useGetTestimoniesFeed = (params: QueryParams, options?: { enabled?: boolean }) => {
     return useInfiniteQuery({
         queryKey: [
             QUERY_KEYS.TESTIMONY.GET_TESTIMONY_FEED,
@@ -16,6 +16,7 @@ export const useGetTestimoniesFeed = (params: QueryParams) => {
         ],
 
         initialPageParam: 1,
+        enabled: options?.enabled ?? true,
 
         queryFn: async ({ pageParam }) => {
             const resp = await publicAxios.get<TestimoniesResponse>(
@@ -202,6 +203,47 @@ export const useGetReplies = (params: QueryParams) => {
             return hasNextPage
                 ? currentPage + 1
                 : undefined
+        },
+    })
+}
+
+
+export const useGetTestimoniesByTopics = (
+    props: QueryParams,
+    options?: { enabled?: boolean }
+) => {
+    const { id, ...params } = props
+    return useInfiniteQuery({
+        queryKey: [
+            QUERY_KEYS.TOPIC.GET_TESTIMONIES_BY_TOPIC,
+            sanitizeParams(props),
+        ],
+
+        enabled: options?.enabled ?? true,
+
+        initialPageParam: 1,
+
+        queryFn: async ({ pageParam }) => {
+            const resp = await publicAxios.get<TestimoniesResponse>(
+                API_URL.TESTIMONY.GET_TESTIMONIES_BY_TOPIC(id as string),
+                {
+                    params: sanitizeParams({
+                        ...params,
+                        page: pageParam,
+                    }),
+                }
+            )
+
+            return resp.data
+        },
+
+        getNextPageParam: (lastPage) => {
+            const currentPage = lastPage?.page
+            const nextPageExists = lastPage?.next_page
+
+            if (!currentPage || !nextPageExists) return undefined
+
+            return currentPage + 1
         },
     })
 }

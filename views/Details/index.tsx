@@ -45,6 +45,8 @@ const Index = ({ testimonyId }: Props) => {
 
     const replies = testimonyReplies?.pages?.flatMap(page => page.results) ?? []
 
+    console.log(replies, "replies")
+
     return (
         <div className='space-y-8 py-10'>
             <button onClick={() => router.back()} className='flex items-center gap-2 '>
@@ -93,7 +95,7 @@ const Index = ({ testimonyId }: Props) => {
                                 replies.map((item) => {
                                     return (
                                         <CommentCard
-                                            key={item.id}
+                                            key={item?.id}
                                             comment={item}
                                         />
                                     )
@@ -108,7 +110,7 @@ const Index = ({ testimonyId }: Props) => {
 
             {
                 hasNextPage &&
-                <button onClick={() => fetchNextPage()} className='text-sm font-semibold text-neutral-600 bg-none'>15 more comments ...</button>
+                <button onClick={() => fetchNextPage()} className='text-sm font-semibold text-neutral-600 bg-none'>load more comments ...</button>
             }
         </div>
     )

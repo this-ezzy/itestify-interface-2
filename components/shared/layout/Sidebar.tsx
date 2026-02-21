@@ -12,15 +12,21 @@ import { useAppDispatch, useAppSelector } from '@/Redux/store'
 import { toggleAppMenu, toggleShowAboutModal } from '@/Redux/Slices/appSlice'
 import { useGetFellowships } from '@/app/api/hooks/fellowships'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useGetAllTopics } from '@/app/api/hooks/topics'
+import { useGetParams, useUpdateParams } from '@/hooks'
+import { trendingFellowships } from '@/views/Home'
 
 
 
 const Sidebar = () => {
     const pathname = usePathname()
-    const { data: fellowshipData, isLoading } = useGetFellowships()
+    // const { data: fellowshipData, isLoading } = useGetFellowships()
+    const { data: topicsData, isLoading } = useGetAllTopics()
     const activeFellowshipSlug = pathname.split("/")[2]
     const { isAppMenuOpen } = useAppSelector((state) => state.app)
     const dispatch = useAppDispatch()
+    const { updateParams } = useUpdateParams()
+    const { topic } = useGetParams(["topic"])
 
     const showAboutModal = () => {
         dispatch(toggleShowAboutModal(true))
@@ -28,6 +34,11 @@ const Sidebar = () => {
 
     const closeMenu = () => {
         dispatch(toggleAppMenu())
+    }
+
+
+    const handleTopicClick = (id: string) => {
+        updateParams({ topic: id })
     }
 
     return (
@@ -72,7 +83,7 @@ const Sidebar = () => {
                     <ul className='px-5 space-y-2'>
                         {
                             AppLinks.map((item) => {
-                                const isActive = pathname === item.href
+                                const isActive = pathname === item.href && !topic
                                 const Icon = item.icon
                                 return (
                                     <Link href={item.href} key={item.id} className={cn('flex font-medium items-center gap-2.5 px-3 py-2 hover:bg-neutral-100 rounded-lg text-neutral-600 text-sm', isActive && "bg-neutral-100 text-neutral-800")}>
@@ -85,7 +96,7 @@ const Sidebar = () => {
                     </ul>
 
                     <section className='border-y py-4 px-5 mt-4'>
-                        <h4 className='p-2 flex items-center gap-2 uppercase text-xs font-medium text-neutral-600'>Fellowships <ChevronRight className='size-5' /> </h4>
+                        <h4 className='p-2 flex items-center gap-2 uppercase text-xs font-medium text-neutral-600'>Topics <ChevronRight className='size-5' /> </h4>
 
                         {
                             isLoading ?
@@ -99,16 +110,19 @@ const Sidebar = () => {
                                 :
                                 <>
                                     {
-                                        fellowshipData?.length ?
+                                        topicsData?.length ?
                                             <ul className='space-y-1'>
                                                 {
-                                                    fellowshipData?.map((fellowship) => {
-                                                        const isActive = activeFellowshipSlug?.toLowerCase() === fellowship?.slug?.toLowerCase()
+                                                    topicsData?.map((fellowship) => {
+                                                        const isActive = topic === fellowship?.id.toString()
+                                                        const Icon = trendingFellowships.find((item) => item.title.toLowerCase() === fellowship.name.toLowerCase())
                                                         return (
-                                                            <Link href={`/fellowships/${fellowship.slug}`} key={fellowship.id} className={cn('flex px-3 py-2 items-center gap-3.5 hover:bg-neutral-100 rounded-lg text-neutral-600 text-sm', isActive && "bg-neutral-100 text-neutral-800")}>
-                                                                <Image src={fellowship.image} alt={fellowship.name} height={20} width={20} />
+                                                            <button onClick={() => handleTopicClick(fellowship.id.toString())} key={fellowship.id} className={cn('flex px-3 py-2 items-center gap-3.5 rounded-lg text-neutral-600 text-sm', isActive && "bg-neutral-100 text-neutral-800 w-full ")}>
+                                                                {Icon &&
+                                                                    <Icon.icon style={{ color: Icon.color }} />
+                                                                }
                                                                 <p className='text-neutral-800 font-medium text-sm truncate'>{fellowship.name}</p>
-                                                            </Link>
+                                                            </button>
                                                         )
                                                     })
                                                 }
