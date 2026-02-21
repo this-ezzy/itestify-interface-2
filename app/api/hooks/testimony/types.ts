@@ -1,13 +1,14 @@
 export interface QueryParams {
     limit?: number;
     page?: number
+    id?: string
 }
 
 export interface TestimoniesResponse {
     results: Testimony[];
     limit: number;
     page: number;
-    hasNext: boolean
+    next_page: boolean
 }
 
 export interface Testimony {
@@ -23,6 +24,8 @@ export interface Testimony {
 
     liked: boolean
 
+    bookmarked: boolean
+
     impressions: number;
     parent_id: number | null;
 
@@ -31,6 +34,8 @@ export interface Testimony {
 
     topics: Topic[];
     user: TestimonyUser;
+
+    replies_count: number
 }
 
 export interface TestimonyMedia {
@@ -64,10 +69,11 @@ export type UploadedAttachment = {
 
 
 export interface TestimonyPayload {
-    title: string
+    title?: string
     body: string
     topic?: number
-    files: UploadedAttachment[]
+    files?: UploadedAttachment[]
     isDraft?: boolean
     scheduledAt?: string | null
+    parent_id?: string
 }

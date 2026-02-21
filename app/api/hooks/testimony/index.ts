@@ -32,22 +32,10 @@ export const useGetTestimoniesFeed = (params: QueryParams) => {
         },
 
         getNextPageParam: (lastPage) => {
-            /**
-             * Adjust this logic depending on your API shape.
-             * Common patterns:
-             *
-             * 1. If API returns:
-             *    { data: [], meta: { currentPage, totalPages } }
-             *
-             * 2. If API returns:
-             *    { data: [], nextPage: number | null }
-             */
-
             const currentPage = lastPage?.page
-            const hasNextPage = lastPage.hasNext
+            const hasNextPage = lastPage.next_page
 
             if (!currentPage || !hasNextPage) return undefined
-
             return hasNextPage
                 ? currentPage + 1
                 : undefined
@@ -83,9 +71,10 @@ export const useCreateTestimony = () => {
             const formData = new FormData()
 
             // append text fields
-            formData.append("title", params.title)
             formData.append("body", params.body)
-            formData.append("isDraft", String(params.isDraft))
+            if (params.parent_id) formData.append("parent_id", params.parent_id)
+            if (params.title) formData.append("title", params.title)
+            if (params.isDraft) formData.append("isDraft", String(params.isDraft))
             if (params.topic !== undefined) formData.append("topic", String(params.topic))
             if (params.scheduledAt) formData.append("scheduledAt", params.scheduledAt)
 
@@ -110,6 +99,7 @@ export const useCreateTestimony = () => {
 
         onSuccess: () => {
             client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_FEED] })
+            client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_REPLY] })
         },
     })
 }
@@ -139,6 +129,7 @@ export const useLikeTestimony = () => {
         },
     })
 }
+
 export const useDisLikeTestimony = () => {
     return useMutation({
         mutationKey: [QUERY_KEYS.TESTIMONY.UN_LIKE_TESTIMONY],
@@ -175,6 +166,42 @@ export const useRemoveBookmarkTestimony = () => {
         },
         onSuccess: () => {
             client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_FEED] })
+        },
+    })
+}
+
+export const useGetReplies = (params: QueryParams) => {
+    return useInfiniteQuery({
+        queryKey: [
+            QUERY_KEYS.TESTIMONY.GET_TESTIMONY_REPLY,
+            sanitizeParams(params), // ensures cache separation per filter set
+        ],
+
+        initialPageParam: 1,
+
+        queryFn: async ({ pageParam }) => {
+            const resp = await securedAxios.get<TestimoniesResponse>(
+                API_URL.TESTIMONY.GET_REPLIES(params.id as string),
+                {
+                    params: sanitizeParams({
+                        ...params,
+                        page: pageParam,
+                    }),
+                }
+            )
+
+            return resp.data
+        },
+
+        getNextPageParam: (lastPage) => {
+            const currentPage = lastPage?.page
+            const hasNextPage = lastPage.next_page
+
+            if (!currentPage || !hasNextPage) return undefined
+
+            return hasNextPage
+                ? currentPage + 1
+                : undefined
         },
     })
 }

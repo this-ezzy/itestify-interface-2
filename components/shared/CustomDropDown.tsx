@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { Check } from "@untitled-ui/icons-react"
+import { Loader2 } from "lucide-react"
 
 export type DropdownItem<T extends string> = {
     value: T
@@ -14,6 +15,7 @@ export type DropdownItem<T extends string> = {
     icon?: React.ReactNode  // for trigger or menu
     disabled?: boolean
     className?: string
+    isLoading?: boolean
 }
 
 
@@ -26,6 +28,7 @@ interface CustomDropdownProps<T extends string> {
     align?: "start" | "center" | "end"
     side?: "top" | "right" | "bottom" | "left"
     contentClassName?: string
+    showCheck?: boolean
 }
 
 export default function CustomDropDown<T extends string>({
@@ -36,6 +39,7 @@ export default function CustomDropDown<T extends string>({
     align = "start",
     side = "bottom",
     contentClassName,
+    showCheck
 }: Readonly<CustomDropdownProps<T>>) {
     const selected = items.find((i) => i.value === value) ?? null
 
@@ -64,6 +68,7 @@ export default function CustomDropDown<T extends string>({
             >
                 {items.map((item) => {
                     const isActive = value === item.value
+                    const isLoading = item.isLoading
 
                     return (
                         <DropdownMenuItem
@@ -84,7 +89,9 @@ export default function CustomDropDown<T extends string>({
                                 {item.label}
                             </span>
 
-                            {isActive && <Check />}
+                            {isActive && !isLoading && showCheck && <Check />}
+                            {isLoading && <Loader2 className="animate-spin" />}
+
                         </DropdownMenuItem>
                     )
                 })}

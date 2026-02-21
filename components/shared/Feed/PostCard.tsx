@@ -3,7 +3,7 @@
 
 import { CelebrateIcon, ChatCircle, KeyIcon, ShareIcon } from "../Icons"
 import { cn } from "@/lib/utils"
-import { Bookmark, EyeOff, Flag03, MedicalCross } from "@untitled-ui/icons-react"
+import { Bookmark, EyeOff, Flag03, MedicalCross, Share06 } from "@untitled-ui/icons-react"
 import CustomDropDown from "../CustomDropDown"
 import { useState, useMemo } from "react"
 import DOMPurify from "dompurify"
@@ -40,7 +40,7 @@ export default function PostCard({
     testimony,
     cardType = "card"
 }: PostCardProps) {
-    const { liked, id, title, body, user, topics, media = [] } = testimony ?? {}
+    const { liked, bookmarked, id, title, body, user, topics, media = [], replies_count } = testimony ?? {}
     const excerpt = body
     const isCompact = cardType === "compact"
     const author = user?.username
@@ -48,17 +48,17 @@ export default function PostCard({
     const isCard = cardType === "card"
     const category = topics?.[0]?.name
     const [action, setAction] = useState<ActionType | null>(null)
-    const { mutateAsync: handleAddBookmark } = useBookmarkTestimony()
-    const { mutateAsync: handleRemoveBookmark } = useRemoveBookmarkTestimony()
+    const { mutateAsync: handleAddBookmark, isPending: isBookmarking } = useBookmarkTestimony()
+    const { mutateAsync: handleRemoveBookmark, isPending: isRemovingBookmark } = useRemoveBookmarkTestimony()
     const { mutateAsync: handleLikeTestimony, isPending: isLiking } = useLikeTestimony()
-    const { mutateAsync: handleDislikeTestimony } = useDisLikeTestimony()
+    const { mutateAsync: handleDislikeTestimony, isPending: isDisliking } = useDisLikeTestimony()
 
     const bookmarkItem = async () => {
-        await handleAddBookmark(id.toString(), {
-            onSuccess: () => {
-
-            }
-        })
+        if (bookmarked) {
+            await handleRemoveBookmark(id.toString())
+        } else {
+            await handleAddBookmark(id.toString())
+        }
     }
 
     const hideItem = async () => {
@@ -110,7 +110,11 @@ export default function PostCard({
     const readTime = estimateReadTime(excerpt)
 
     const handleCelebrate = async () => {
-        await handleLikeTestimony(id.toString())
+        if (liked) {
+            await handleDislikeTestimony(id.toString())
+        } else {
+            await handleLikeTestimony(id.toString())
+        }
     }
 
     const handleShare = async (e?: React.MouseEvent<HTMLButtonElement>) => {
@@ -119,8 +123,6 @@ export default function PostCard({
 
         try {
             const shareData = {
-                title,
-                text: title,
                 url: `${window.location.origin}/t/${id}`
             }
 
@@ -177,10 +179,11 @@ export default function PostCard({
 
                     <CustomDropDown
                         value={action}
+                        showCheck={false}
                         align="end"
                         onChange={handleAction}
                         items={[
-                            { value: "save", icon: <Bookmark />, label: <>Save</> },
+                            { value: "save", icon: <Bookmark className={bookmarked ? "text-orange-500 fill-orange-500" : ""} />, label: <span className={bookmarked ? "text-orange-500" : ""}>{bookmarked ? "Remove" : "Save"}</span>, isLoading: isBookmarking || isRemovingBookmark },
                             { value: "hide", icon: <EyeOff />, label: <>Hide</> },
                             { value: "report", icon: <Flag03 />, label: <>Report</> }
                         ]}
@@ -222,16 +225,19 @@ export default function PostCard({
                     {/* ------------------ Actions ------------------ */}
                 <div className="mt-4 flex flex-wrap items-center gap-2 relative z-30">
                         <ActionButton
-                            label="Celebrate"
-                        icon={isLiking ? <Loader2 className="animate-spin size-4" /> : <CelebrateIcon />}
+                        label={liked ? "Celebrated" : "Celebrate"}
+                        icon={isLiking || isDisliking ? <Loader2 className="animate-spin size-4" /> : <CelebrateIcon />}
                         onClick={handleCelebrate}
-                        className={cn("", liked && "bg-primary")}
+                        className={cn("", liked && "text-orange-500 border-orange-500")}
                         />
-                    {/* <ActionButton icon={<ChatCircle />}
-                        onClick={ } />
-                    <ActionButton icon={<KeyIcon />} className="px-1 py-1 size-7!"
+                    <ActionButton icon={<ChatCircle />
+                    }
+                        label={replies_count.toString()}
+                        className="cursor-copy"
+                    />
+                    {/* <ActionButton icon={<KeyIcon />} className="px-1 py-1 size-7!"
                         onClick={ } /> */}
-                    <ActionButton label="Share" icon={<ShareIcon />}
+                    <ActionButton label="Share" icon={<Share06 className="size-4" />}
                         onClick={handleShare} />
                 </div>
             </section>
@@ -253,7 +259,6 @@ function ActionButton({
 }) {
     const { data } = useAuth()
 
-
     return (
         <button
             disabled={!data?.token}
@@ -272,3 +277,4 @@ function ActionButton({
         </button>
     )
 }
+

@@ -2,29 +2,30 @@
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { CelebrateIcon, ChatCircle, ShareIcon } from "../Icons"
+import { Testimony } from "@/app/api/hooks/testimony/types"
+import { estimateReadTime } from "@/utils/readTime"
 
 
 type CommentCardProps = {
-    readonly author: string
-    readonly avatarUrl: string
-    readonly time: string
-    readonly excerpt: string
     readonly className?: string
+    readonly comment: Testimony
 }
 
 export default function CommentCard({
-    author,
-    avatarUrl,
-    time,
-    excerpt,
-    className
+    className,
+    comment
 }: CommentCardProps) {
+    const { liked, bookmarked, id, title, body, user, topics, media = [] } = comment ?? {}
+    const excerpt = body
+    const author = user?.username
+    const avatarUrl = user?.avatar_url
+    const readTime = estimateReadTime(excerpt)
     return (
         <article className={cn("w-full max-w-full flex items-stretch gap-2   ", className)}>
             {/* Header */}
             <div className="flex flex-col items-center shrink-0">
                 <Image
-                    src={avatarUrl}
+                    src={avatarUrl ?? "/assets/Avatars Default with Backdrop.svg"}
                     alt={author}
                     width={32}
                     height={32}
@@ -35,19 +36,19 @@ export default function CommentCard({
             </div>
 
 
-            <section>
-                <div className="flex items-center justify-between">
+            <section className="w-full">
+                <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
 
                         <div className="text-sm flex gap-2 items-center">
                             <span className="font-medium text-neutral-900">
                                 {author}
                             </span>
-                            <div className="text-neutral-400">{time}</div>
+                            <div className="text-neutral-400">{readTime}min</div>
                         </div>
                     </div>
 
-                    <button className="text-neutral-400 hover:text-neutral-600 rotate-90">•••</button>
+                    <button className="text-neutral-400 hover:text-neutral-600 rotate-90 ml-auto">•••</button>
                 </div>
 
                 {/* Excerpt */}
@@ -56,8 +57,8 @@ export default function CommentCard({
                 {/* Actions */}
                 <div className="mt-4 flex items-center gap-2">
                     <ActionButton label="Celebrate" icon={<CelebrateIcon className="text-neutral-700" />} className="px-3" />
-                    <ActionButton icon={<ChatCircle className="text-neutral-700" />} className="size-7!" />
-                    <ActionButton icon={<ShareIcon className="text-neutral-700" />} className="size-7!" />
+                    {/* <ActionButton icon={<ChatCircle className="text-neutral-700" />} className="size-7!" />
+                    <ActionButton icon={<ShareIcon className="text-neutral-700" />} className="size-7!" /> */}
                 </div>
             </section>
         </article>
@@ -72,3 +73,5 @@ function ActionButton({ label, icon, className }: { readonly label?: string; rea
         </button>
     )
 }
+
+

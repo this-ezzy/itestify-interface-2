@@ -56,6 +56,7 @@ const Index = () => {
         }
     }, [dispatch, isInViewport])
 
+
     useEffect(() => {
         if (isLoadMoreVisible && hasNextPage && !isFetchingNextPage) {
             fetchNextPage()
@@ -105,7 +106,6 @@ const Index = () => {
                             <>
                                 {
                                     feed.length > 0 ?
-                                        <>
                                         <ul className='flex flex-col gap-4'>
                                             {
                                                 feed.map((item) => (
@@ -119,18 +119,16 @@ const Index = () => {
                                                 ))
                                             }
                                         </ul>
-
-                                            <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
-                                                {isFetchingNextPage && (
-                                                    <div className="flex items-center gap-2 text-sm text-neutral-500">
-                                                        <Loader2 className="animate-spin size-4" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </>
                                         :
                                         <NoFeed />
                                 }
+                                <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
+                                    {isFetchingNextPage && (
+                                        <div className="flex items-center gap-2 text-sm text-neutral-500">
+                                            <Loader2 className="animate-spin size-4" />
+                                        </div>
+                                    )}
+                                </div>
                             </>
                     }
                 </main>

@@ -21,6 +21,7 @@ export const API_URL = {
         DELETE_TESTIMONY: (id: string) => `/testimonies/${id}`,
         LIKE_TESTIMONY: (id: string) => `/engagement/testimonies/${id}/like`,
         BOOKMARK_TESTIMONY: (id: string) => `/engagement/testimonies/${id}/bookmark`,
+        GET_REPLIES: (id: string) => `/testimonies/${id}/replies`
     },
     FELLOWSHIP: {
         GET_FELLOWSHIPS: "/fellowships",
