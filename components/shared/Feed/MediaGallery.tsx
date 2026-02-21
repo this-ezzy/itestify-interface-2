@@ -13,7 +13,7 @@ export interface MediaItem {
 type Variant = "card" | "compact"
 
 interface Props {
-    media?: MediaItem[]
+    media: MediaItem[] | null
     variant?: Variant
     className?: string
     imageClassName?: string
@@ -32,6 +32,7 @@ export default function MediaGallery({
     imageClassName
 }: Readonly<Props>) {
     const { images, videos, firstImage, hasMedia } = useMemo(() => {
+        if (!media) return {}
         const images = media.filter((m) => m.type === "image")
         const videos = media.filter((m) => m.type === "video")
 

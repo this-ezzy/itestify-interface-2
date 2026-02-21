@@ -16,14 +16,25 @@ import { useCreateTestimony, useGetTestimoniesFeed } from '@/app/api/hooks/testi
 import { TestimonyPayload } from '@/app/api/hooks/testimony/types'
 import useAuth from '@/app/api/hooks/auth'
 import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
 
 
 const Index = () => {
     const [sortBy, setSortBy] = useState<"trending" | "new" | "top">("trending")
     const { data: auth } = useAuth()
     const [layout, setLayout] = useState<CardType>("card")
-    const { data, isLoading } = useGetTestimoniesFeed({})
+    const {
+        data,
+        isLoading,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useGetTestimoniesFeed({})
     const { ref, isInViewport } = useInViewport<HTMLButtonElement>();
+    const {
+        ref: loadMoreRef,
+        isInViewport: isLoadMoreVisible
+    } = useInViewport<HTMLDivElement>()
     const dispatch = useAppDispatch()
     const { mutateAsync: handleTestimonyUpload, isPending } = useCreateTestimony()
 
@@ -45,8 +56,13 @@ const Index = () => {
         }
     }, [dispatch, isInViewport])
 
+    useEffect(() => {
+        if (isLoadMoreVisible && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage()
+        }
+    }, [isLoadMoreVisible, hasNextPage, isFetchingNextPage, fetchNextPage])
 
-    const feed = data?.data ?? []
+    const feed = data?.pages?.flatMap(page => page.results) ?? []
 
     const handlePostTestimony = async (payload: TestimonyPayload) => {
         await handleTestimonyUpload(payload, {
@@ -54,7 +70,6 @@ const Index = () => {
                 toast.success("🙌 Posted! May your testimony strengthen someone’s faith today.")
             }
         })
-
     }
 
     return (
@@ -90,24 +105,29 @@ const Index = () => {
                             <>
                                 {
                                     feed.length > 0 ?
+                                        <>
                                         <ul className='flex flex-col gap-4'>
                                             {
                                                 feed.map((item) => (
                                                     <Link href={`/t/${item.id}`} key={item.id}>
                                                         <PostCard
-                                                            author={item.user.username}
-                                                            avatarUrl={item.user.avatar_url}
-                                                            title={item.title}
-                                                            excerpt={item.body}
-                                                            media={item.media ?? undefined}
-                                                            category={item.topics?.[0]?.name}
                                                             className='pt-4'
                                                             cardType={layout}
+                                                            testimony={item}
                                                         />
                                                     </Link>
                                                 ))
                                             }
                                         </ul>
+
+                                            <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
+                                                {isFetchingNextPage && (
+                                                    <div className="flex items-center gap-2 text-sm text-neutral-500">
+                                                        <Loader2 className="animate-spin size-4" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </>
                                         :
                                         <NoFeed />
                                 }

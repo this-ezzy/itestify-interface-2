@@ -4,9 +4,10 @@ export interface QueryParams {
 }
 
 export interface TestimoniesResponse {
-    data: Testimony[];
+    results: Testimony[];
     limit: number;
     page: number;
+    hasNext: boolean
 }
 
 export interface Testimony {
@@ -19,6 +20,8 @@ export interface Testimony {
     is_draft: boolean;
 
     media: TestimonyMedia[] | null;
+
+    liked: boolean
 
     impressions: number;
     parent_id: number | null;
