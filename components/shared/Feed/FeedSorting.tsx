@@ -21,7 +21,9 @@ const FeedSorting = ({ sortBy, setSortBy, layout, setLayout, className }: Props)
 
                 <CustomDropDown
                     value={sortBy}
-                    onChange={setSortBy}
+                    onChange={(e, value) => {
+                        setSortBy(value)
+                    }}
                     items={[
                         { value: "trending", label: "Trending" },
                         { value: "new", label: "New" },
@@ -42,7 +44,9 @@ const FeedSorting = ({ sortBy, setSortBy, layout, setLayout, className }: Props)
 
                 <CustomDropDown
                     value={layout}
-                    onChange={setLayout}
+                    onChange={(e, value) => {
+                        setLayout(value)
+                    }}
                     items={[
                         {
                             value: "card",

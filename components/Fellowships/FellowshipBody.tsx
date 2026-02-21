@@ -20,7 +20,7 @@ const FellowshipBody = () => {
 
             <ul className='flex flex-col gap-4'>
                 <Link href={`/t/1`}>
-                    <PostCard
+                    {/* <PostCard
                         author="{newusername}"
                         avatarUrl="/assets/Avatars Default with Backdrop.svg"
                         title="How Forgiveness Brought Peace Back Into My Home After Months of Conflict"
@@ -30,18 +30,10 @@ const FellowshipBody = () => {
                         bodyClassName='max-w-full'
 
                         cardType={layout}
-                    />
+                    /> */}
                 </Link>
                 <Link href={`/t/2`}>
-                    <PostCard
-                        author="{newusername}"
-                        avatarUrl="/assets/Avatars Default with Backdrop.svg"
-                        title="I got the job!!!"
-                        excerpt="There was so much tension between me and my husband that we barely spoke for weeks..."
-                        className='pt-4'
-                        cardType={layout}
-                        imageClassName='max-w-full'
-                    />
+
                 </Link>
 
 

@@ -25,7 +25,7 @@ const FellowshipHeader = ({ fellowshipId }: Props) => {
 
     if (!activeFellowship) return <></>
 
-    const handleAction = (action: string) => {
+    const handleAction = (e: Event, action: string) => {
         console.log(action)
         setAction(action)
     }
