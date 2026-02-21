@@ -10,7 +10,7 @@ import Image from 'next/image'
 import ColorModeToggle from './ColorModeToggle'
 import { useAppDispatch, useAppSelector } from '@/Redux/store'
 import { toggleAppMenu, toggleShowAboutModal } from '@/Redux/Slices/appSlice'
-import { useGetFellowships } from '@/app/api/hooks/fellowships'
+// import { useGetFellowships } from '@/app/api/hooks/fellowships'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useGetAllTopics } from '@/app/api/hooks/topics'
 import { useGetParams, useUpdateParams } from '@/hooks'
@@ -22,7 +22,6 @@ const Sidebar = () => {
     const pathname = usePathname()
     // const { data: fellowshipData, isLoading } = useGetFellowships()
     const { data: topicsData, isLoading } = useGetAllTopics()
-    const activeFellowshipSlug = pathname.split("/")[2]
     const { isAppMenuOpen } = useAppSelector((state) => state.app)
     const dispatch = useAppDispatch()
     const { updateParams } = useUpdateParams()

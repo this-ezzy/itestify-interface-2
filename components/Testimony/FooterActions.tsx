@@ -41,7 +41,7 @@ export default function FooterActions({
                     variant="outline"
                     disabled={disabled || exceedCharLimit}
                     onClick={onPost}
-                    className="bg-black disabled:cursor-not-allowed text-white px-4 py-1 rounded-full disabled:opacity-50 flex justify-center h-9 font-semibold text-sm items-center gap-2"
+                    className="bg-black disabled:cursor-not-allowed text-white px-4 py-1 rounded-full disabled:opacity-50 flex justify-center h-9 font-semibold text-sm items-center gap-2 hover:bg-black hover:text-white"
                 >
                     {
                         isPosting ?

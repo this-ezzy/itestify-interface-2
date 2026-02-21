@@ -75,9 +75,8 @@ export const useCreateTestimony = () => {
             formData.append("body", params.body)
             if (params.parent_id) formData.append("parent_id", params.parent_id)
             if (params.title) formData.append("title", params.title)
-            if (params.isDraft) formData.append("isDraft", String(params.isDraft))
-            if (params.topic !== undefined) formData.append("topic", String(params.topic))
-            if (params.scheduledAt) formData.append("scheduledAt", params.scheduledAt)
+            if (params.isDraft) formData.append("is_draft", String(params.isDraft))
+            if (params.topic !== undefined) formData.append("topic_id", String(params.topic))
 
             // append files exactly like Postman
             if (params.files?.length) {
