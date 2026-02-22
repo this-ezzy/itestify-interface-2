@@ -4,7 +4,7 @@ import { TestimonyComposer } from '@/components/Testimony'
 import { Button } from '@/components/ui/button'
 import { Briefcase01, ChevronRightDouble, CoinsStacked03, Heart, HeartSquare, MedicalCross, Plane, Plus, TrendUp01 } from '@untitled-ui/icons-react'
 import Image from 'next/image'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import { toggleTestimonyModal } from '@/Redux/Slices/testimonySlice'
 import { useAppDispatch } from '@/Redux/store'
@@ -12,7 +12,7 @@ import Link from 'next/link'
 import { CardType } from '@/components/shared/Feed/PostCard'
 import useInViewport from '@/hooks/useInViewPort'
 import { toggleShowAuthModal, updateShowNavTestimonyButton } from '@/Redux/Slices/appSlice'
-import { useCreateTestimony, useGetTestimoniesByTopics, useGetTestimoniesFeed } from '@/app/api/hooks/testimony'
+import { useCreateTestimony, useGetTestimoniesByTopics, useGetTestimoniesFeed, useSearchTestimonies } from '@/app/api/hooks/testimony'
 import { TestimonyPayload } from '@/app/api/hooks/testimony/types'
 import useAuth from '@/app/api/hooks/auth'
 import { toast } from 'sonner'
@@ -24,8 +24,20 @@ const Index = () => {
     const [sortBy, setSortBy] = useState<"trending" | "new" | "top">("trending")
     const { data: auth } = useAuth()
     const [layout, setLayout] = useState<CardType>("card")
-    const { topic } = useGetParams(["topic"])
+    const { topic, q } = useGetParams(["topic", "q"])
     const isTopicMode = Boolean(topic)
+    const isSearchMode = Boolean(q)
+
+    const {
+        data: searchData,
+        isLoading: isSearchLoading,
+        fetchNextPage: fetchNextSearchPage,
+        hasNextPage: hasSearchNextPage,
+        isFetchingNextPage: isFetchingSearchNextPage,
+    }
+        = useSearchTestimonies({
+            q
+        }, { enabled: !!q })
 
     const {
         data: feedData,
@@ -44,17 +56,46 @@ const Index = () => {
     } = useGetTestimoniesByTopics(
         { id: topic },
         { enabled: isTopicMode }
+        )
 
 
-    )
+    /* ---------------- ACTIVE SOURCE RESOLUTION ---------------- */
 
-    const data = isTopicMode ? topicData : feedData
-    const isLoading = isTopicMode ? isTopicLoading : isFeedLoading
-    const fetchNextPage = isTopicMode ? fetchTopicNextPage : fetchFeedNextPage
-    const hasNextPage = isTopicMode ? hasTopicNextPage : hasFeedNextPage
-    const isFetchingNextPage = isTopicMode
-        ? isFetchingTopicNextPage
-        : isFetchingFeedNextPage
+    const {
+        data,
+        isLoading,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useMemo(() => {
+        if (isSearchMode) {
+            return {
+                data: searchData,
+                isLoading: isSearchLoading,
+                fetchNextPage: fetchNextSearchPage,
+                hasNextPage: hasSearchNextPage,
+                isFetchingNextPage: isFetchingSearchNextPage,
+            }
+        }
+
+        if (isTopicMode) {
+            return {
+                data: topicData,
+                isLoading: isTopicLoading,
+                fetchNextPage: fetchTopicNextPage,
+                hasNextPage: hasTopicNextPage,
+                isFetchingNextPage: isFetchingTopicNextPage,
+            }
+        }
+
+        return {
+            data: feedData,
+            isLoading: isFeedLoading,
+            fetchNextPage: fetchFeedNextPage,
+            hasNextPage: hasFeedNextPage,
+            isFetchingNextPage: isFetchingFeedNextPage,
+        }
+    }, [isSearchMode, isTopicMode, feedData, isFeedLoading, fetchFeedNextPage, hasFeedNextPage, isFetchingFeedNextPage, searchData, isSearchLoading, fetchNextSearchPage, hasSearchNextPage, isFetchingSearchNextPage, topicData, isTopicLoading, fetchTopicNextPage, hasTopicNextPage, isFetchingTopicNextPage])
 
     const { ref, isInViewport } = useInViewport<HTMLButtonElement>();
     const {

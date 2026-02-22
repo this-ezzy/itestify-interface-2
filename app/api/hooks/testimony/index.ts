@@ -126,6 +126,8 @@ export const useLikeTestimony = () => {
         },
         onSuccess: () => {
             client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_FEED] })
+            client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TOPIC.GET_TESTIMONIES_BY_TOPIC] })
+            client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.SEARCH_TESTIMONIES] })
         },
     })
 }
@@ -139,6 +141,8 @@ export const useDisLikeTestimony = () => {
         },
         onSuccess: () => {
             client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_FEED] })
+            client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TOPIC.GET_TESTIMONIES_BY_TOPIC] })
+            client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.SEARCH_TESTIMONIES] })
         },
     })
 }
@@ -152,6 +156,8 @@ export const useBookmarkTestimony = () => {
         },
         onSuccess: () => {
             client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_FEED] })
+            client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TOPIC.GET_TESTIMONIES_BY_TOPIC] })
+            client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.SEARCH_TESTIMONIES] })
         },
 
     })
@@ -166,6 +172,8 @@ export const useRemoveBookmarkTestimony = () => {
         },
         onSuccess: () => {
             client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.GET_TESTIMONY_FEED] })
+            client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TOPIC.GET_TESTIMONIES_BY_TOPIC] })
+            client.get().invalidateQueries({ queryKey: [QUERY_KEYS.TESTIMONY.SEARCH_TESTIMONIES] })
         },
     })
 }
@@ -225,6 +233,46 @@ export const useGetTestimoniesByTopics = (
         queryFn: async ({ pageParam }) => {
             const resp = await publicAxios.get<TestimoniesResponse>(
                 API_URL.TESTIMONY.GET_TESTIMONIES_BY_TOPIC(id as string),
+                {
+                    params: sanitizeParams({
+                        ...params,
+                        page: pageParam,
+                    }),
+                }
+            )
+
+            return resp.data
+        },
+
+        getNextPageParam: (lastPage) => {
+            const currentPage = lastPage?.page
+            const nextPageExists = lastPage?.next_page
+
+            if (!currentPage || !nextPageExists) return undefined
+
+            return currentPage + 1
+        },
+    })
+}
+
+export const useSearchTestimonies = (
+    params: QueryParams,
+    options?: { enabled?: boolean }
+) => {
+
+    return useInfiniteQuery({
+        queryKey: [
+            QUERY_KEYS.TESTIMONY.SEARCH_TESTIMONIES,
+            sanitizeParams(params),
+        ],
+
+        enabled: options?.enabled ?? true,
+
+        initialPageParam: 1,
+
+        queryFn: async ({ pageParam }) => {
+            const resp = await publicAxios.get<TestimoniesResponse>(
+                API_URL.TESTIMONY.SEARCH_TESTIMONIES,
                 {
                     params: sanitizeParams({
                         ...params,
