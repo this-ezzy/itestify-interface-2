@@ -29,6 +29,7 @@ const Sidebar = () => {
 
     const showAboutModal = () => {
         dispatch(toggleShowAboutModal(true))
+        closeMenu()
     }
 
     const closeMenu = () => {
@@ -38,6 +39,7 @@ const Sidebar = () => {
 
     const handleTopicClick = (id: string) => {
         updateParams({ topic: id, q: null })
+        closeMenu()
     }
 
     return (
@@ -85,7 +87,7 @@ const Sidebar = () => {
                                 const isActive = pathname === item.href && !topic
                                 const Icon = item.icon
                                 return (
-                                    <Link href={item.href} key={item.id} className={cn('flex font-medium items-center gap-2.5 px-3 py-2 hover:bg-neutral-100 rounded-lg text-neutral-600 text-sm', isActive && "bg-neutral-100 text-neutral-800")}>
+                                    <Link onClick={closeMenu} href={item.href} key={item.id} className={cn('flex font-medium items-center gap-2.5 px-3 py-2 hover:bg-neutral-100 rounded-lg text-neutral-600 text-sm', isActive && "bg-neutral-100 text-neutral-800")}>
                                         <Icon className={cn(isActive && 'text-orange-500')} />
                                         <span >{item.label}</span>
                                     </Link>
@@ -138,7 +140,7 @@ const Sidebar = () => {
                             <InfoCircle />
                             <span>About iTestify</span>
                         </button>
-                        <Link href={AppRoutes.Donation.href} className={cn('flex font-medium items-center gap-2.5 px-3 py-2 hover:bg-neutral-100 rounded-lg text-neutral-600 text-sm',)}>
+                        <Link onClick={closeMenu} href={AppRoutes.Donation.href} className={cn('flex font-medium items-center gap-2.5 px-3 py-2 hover:bg-neutral-100 rounded-lg text-neutral-600 text-sm',)}>
                             <HeartHand />
                             <span>Make a donation</span>
                         </Link>
