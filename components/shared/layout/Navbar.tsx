@@ -100,9 +100,9 @@ const Navbar = () => {
                         {
                             isAuth ?
 
-                                <div className='md:flex items-center gap-2 flex-1 hidden ml-auto w-full justify-end'>
+                                <div className='flex items-center gap-2 flex-1  ml-auto w-full justify-end'>
                                     <Activity mode={showNavTestimonyButton ? "visible" : "hidden"}  >
-                                        <Button onClick={handleCreateTestimony} className='rounded-[14px] starting:opacity-0 opacity-100 duration-200 ease-linear'>
+                                        <Button onClick={handleCreateTestimony} className='rounded-[14px] hidden md:flex starting:opacity-0 opacity-100 duration-200 ease-linear'>
                                             <WriteCircle />
                                             Share your testimony
                                         </Button>
@@ -112,7 +112,7 @@ const Navbar = () => {
                                         <AlertIcon />
                                     </button>
                                     <User03 />
-                                    <p>{userProfile?.username}</p>
+                                    <p className='hidden md:flex'>{userProfile?.username}</p>
                                     <CustomDropDown
                                         value={accountAction}
                                         align='end'
@@ -145,16 +145,15 @@ const Navbar = () => {
                                 <div className='flex items-center gap-2'>
 
                                     <Button onClick={handleLoginClick} className='bg-neutral-100 hover:bg-neutral-100 cursor-pointer text-neutral-800 text-sm font-medium rounded-md h-10'>Log in</Button>
-
-                                    <Button onClick={toggleMenu} className='bg-neutral-100 md:hidden hover:bg-neutral-100 cursor-pointer text-neutral-800 text-base font-medium rounded-md size-10'>
-                                        {
-                                            isAppMenuOpen ?
-                                                <CloseIcon />
-                                                : <Menu05 />
-                                        }
-                                    </Button>
                                 </div>
                         }
+                        <Button onClick={toggleMenu} className='bg-neutral-100 md:hidden hover:bg-neutral-100 cursor-pointer text-neutral-800 text-base font-medium rounded-md size-10'>
+                            {
+                                isAppMenuOpen ?
+                                    <CloseIcon />
+                                    : <Menu05 />
+                            }
+                        </Button>
                     </section>
             }
         </div>
