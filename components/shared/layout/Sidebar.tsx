@@ -37,7 +37,7 @@ const Sidebar = () => {
 
 
     const handleTopicClick = (id: string) => {
-        updateParams({ topic: id })
+        updateParams({ topic: id, q: null })
     }
 
     return (

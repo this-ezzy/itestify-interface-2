@@ -2,6 +2,7 @@ export interface QueryParams {
     limit?: number;
     page?: number
     id?: string
+    q?: string
 }
 
 export interface TestimoniesResponse {

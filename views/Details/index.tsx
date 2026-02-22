@@ -45,8 +45,6 @@ const Index = ({ testimonyId }: Props) => {
 
     const replies = testimonyReplies?.pages?.flatMap(page => page.results) ?? []
 
-    console.log(replies, "replies")
-
     return (
         <div className='space-y-8 py-10'>
             <button onClick={() => router.back()} className='flex items-center gap-2 '>

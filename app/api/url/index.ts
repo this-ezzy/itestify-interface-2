@@ -22,7 +22,8 @@ export const API_URL = {
         LIKE_TESTIMONY: (id: string) => `/engagement/testimonies/${id}/like`,
         BOOKMARK_TESTIMONY: (id: string) => `/engagement/testimonies/${id}/bookmark`,
         GET_REPLIES: (id: string) => `/testimonies/${id}/replies`,
-        GET_TESTIMONIES_BY_TOPIC: (topicId: string) => `/topics/${topicId}/testimonies`
+        GET_TESTIMONIES_BY_TOPIC: (topicId: string) => `/topics/${topicId}/testimonies`,
+        SEARCH_TESTIMONIES: "/search/testimonies"
     },
     FELLOWSHIP: {
         GET_FELLOWSHIPS: "/fellowships",
