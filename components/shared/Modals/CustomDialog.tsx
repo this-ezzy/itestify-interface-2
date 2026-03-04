@@ -51,7 +51,7 @@ const CustomDialog = ({
             }}
         >
             <DialogContent
-                className={cn('p-12 max-h-[85vh]', contentClassName)}
+                className={cn('p-12 max-h-[85vh] overflow-y-auto', contentClassName)}
                 showCloseButton={showCloseButton && !disableClose}
 
                 // Block backdrop click if disableClose or disableOutsideClick
