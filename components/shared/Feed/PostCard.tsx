@@ -1,7 +1,7 @@
 // components/PostCard.tsx
 'use client'
 
-import { CelebrateIcon, ChatCircle, KeyIcon, ShareIcon } from "../Icons"
+import { CelebrateIcon, ChatCircle } from "../Icons"
 import { cn } from "@/lib/utils"
 import { Bookmark, EyeOff, Flag03, MedicalCross, Share06 } from "@untitled-ui/icons-react"
 import CustomDropDown from "../CustomDropDown"
@@ -14,6 +14,8 @@ import { useBookmarkTestimony, useDisLikeTestimony, useLikeTestimony, useRemoveB
 import { Loader2 } from "lucide-react"
 import useAuth from "@/app/api/hooks/auth"
 import { Testimony } from "@/app/api/hooks/testimony/types"
+import { useAppDispatch } from "@/Redux/store"
+import { toggleAuthModal } from "@/Redux/Slices/authSlice"
 
 export type CardType = "compact" | "card"
 export type ActionType = "save" | "hide" | "report"
@@ -258,15 +260,21 @@ function ActionButton({
         readonly onClick?: () => void
 }) {
     const { data } = useAuth()
+    const dispatch = useAppDispatch()
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation()
+        e.preventDefault()
+        if (!data?.token) {
+            dispatch(toggleAuthModal())
+            return
+        }
+        onClick?.()
+    }
 
     return (
         <button
-            disabled={!data?.token}
-            onClick={(e) => {
-                e.stopPropagation()
-                e.preventDefault()
-                onClick?.()
-            }}
+            onClick={handleClick}
             className={cn(
                 "flex items-center justify-center cursor-pointer gap-1 rounded-full border px-4 py-1 text-sm text-neutral-700 hover:bg-neutral-50 disabled:opacity-50",
                 className
