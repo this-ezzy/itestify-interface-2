@@ -109,7 +109,7 @@ export const clientLogin = async (auth: Partial<AuthResponse>, redirect?: boolea
 export const clientLogout = async () => {
     storage.remove("auth")
     setSessionData("auth", undefined)
-    client.get().removeQueries()
+    client.get().resetQueries()
 }
 
 export const logout = async (data: { refreshToken: string }) => {
@@ -143,14 +143,13 @@ export const useGoogleCallback = () => {
             return result.data
         },
         onSuccess: (resp) => {
-            console.log(resp)
             clientLogin({
                 token: resp.token
             }, true)
             toast.success("Welcome back!!!")
 
         },
-        onError: (resp) => {
+        onError: () => {
             toast.error("We could not complete your authentication, kindly try again later.")
             window.location.href = "/"
         }
