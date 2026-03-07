@@ -31,3 +31,8 @@ export interface AuthLoginReq {
 export interface AuthVerifyReq {
     code: string
 }
+
+
+export interface GoogleLoginResp {
+    redirect_to: string
+}

@@ -109,6 +109,7 @@ const Navbar = () => {
                                     <button className='rounded-full border size-10 shrink-0 flex items-center justify-center'>
                                         <AlertIcon />
                                     </button>
+                                    <div className='flex items-center gap-1'>
                                     <User03 />
                                     <p className='hidden md:flex'>{userProfile?.username}</p>
                                     <CustomDropDown
@@ -130,12 +131,13 @@ const Navbar = () => {
                                             { value: "logout", label: <span className="text-red-500">Logout</span> },
                                         ]}
                                         renderTrigger={() => (
-                                            <div className="flex items-center gap-1">
+
                                                 <ChevronDown />
-                                            </div>
+
                                         )}
                                         contentClassName="min-w-[120px]"
                                     />
+                                    </div>
                                 </div>
 
                                 :

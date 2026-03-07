@@ -4,14 +4,11 @@ import { useState, useCallback, useEffect } from 'react'
 import { useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
-
-import FellowshipSelect from './FellowshipSelect'
 import TitleInput from './TitleInput'
 import TestimonyEditor from './TestimonyEditor'
 import ComposerToolbar from './ComposerToolbar'
 import FooterActions from './FooterActions'
 import CustomDialog from '../shared/Modals/CustomDialog'
-
 import { useAppDispatch, useAppSelector } from '@/Redux/store'
 import { toggleTestimonyModal } from '@/Redux/Slices/testimonySlice'
 
@@ -22,7 +19,8 @@ import { TestimonyPayload, UploadedAttachment } from '@/app/api/hooks/testimony/
 import CharacterCount from '@tiptap/extension-character-count'
 import { toast } from 'sonner'
 import Image from 'next/image'
-
+import { EmojiShortcode } from '@/utils/EmojiShortCutExtension'
+import Placeholder from '@tiptap/extension-placeholder'
 interface Props {
     onPost: (payload: TestimonyPayload) => Promise<void>
     onSaveDraft?: (payload: TestimonyPayload) => void
@@ -51,14 +49,17 @@ export default function TestifyComposer({
     /* --------------------------------- EDITOR -------------------------------- */
 
     const editor = useEditor({
-        extensions: [StarterKit, Underline, CharacterCount],
+        extensions: [StarterKit, Underline, CharacterCount, EmojiShortcode, Placeholder.configure({
+            placeholder: "Share your testimony here for the world to hear..."
+        })],
         content: '',
         editorProps: {
             attributes: {
                 class: 'prose max-w-none min-h-[220px] outline-none'
             }
         },
-        immediatelyRender: false
+        immediatelyRender: false,
+
     })
 
     const content = editor?.getHTML() ?? ''
@@ -129,7 +130,6 @@ export default function TestifyComposer({
     /* --------------------------------- ACTIONS -------------------------------- */
 
     const handlePost = async () => {
-        console.log(buildPayload(), "build payload")
         await onPost(buildPayload())
         close()
     }
@@ -139,7 +139,7 @@ export default function TestifyComposer({
     }
 
 
-    const disabled = !title.trim() || !content.trim() || isPosting
+    const disabled = !title.trim() || content.trim().length < 3 || isPosting
 
     /* --------------------------------- UI -------------------------------- */
     useEffect(() => {
@@ -201,8 +201,6 @@ export default function TestifyComposer({
         >
             <div className="space-y-4">
 
-                <FellowshipSelect onChange={setFellowshipId} />
-
                 <TitleInput
                     value={title}
                     onChange={setTitle}
@@ -245,7 +243,7 @@ export default function TestifyComposer({
 
 
                 <div className="flex justify-between items-center h-20">
-                    <ComposerToolbar editor={editor} onAttach={handleAttach} />
+                    <ComposerToolbar editor={editor} onAttach={handleAttach} setFellowshipId={setFellowshipId} />
 
                     <FooterActions
                         disabled={disabled}

@@ -2,24 +2,35 @@
 'use client'
 
 import { Editor } from '@tiptap/react'
-import { AtSign, Code01, FaceSmile, LetterSpacing01, Strikethrough01, UserPlus01 } from '@untitled-ui/icons-react';
-import { Bold, Italic, Underline, List, Paperclip } from 'lucide-react'
+import { AtSign, Code01, FaceSmile, Image03, LetterSpacing01, Strikethrough01, UserPlus01, UsersPlus } from '@untitled-ui/icons-react';
+// import { Bold, Italic, Underline, List, Paperclip } from 'lucide-react'
 import EmojiPicker from 'emoji-picker-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+// import TestimonyEditor from './TestimonyEditor';
+import FellowshipSelect from './FellowshipSelect';
 
+interface Props {
+    editor: Editor | null;
+    onAttach: (files: FileList) => void
+    setFellowshipId: (id: number) => void
+}
 
-export default function ComposerToolbar({ editor, onAttach }: { editor: Editor | null; onAttach: (files: FileList) => void }) {
+export default function ComposerToolbar({ editor, onAttach, setFellowshipId }: Props) {
     const [openEmoji, setOpenEmoji] = useState(false)
-    if (!editor) return null
 
     const btn = (active: boolean) =>
         `p-2 rounded ${active ? 'bg-gray-100' : ''}`
 
+    useEffect(() => {
+        const close = () => setOpenEmoji(false)
+        window.addEventListener("click", close)
+        return () => window.removeEventListener("click", close)
+    }, [])
 
-
+    if (!editor) return null
     return (
         <section className='text-neutral-800 font-light space-y-2'>
-            <div className="flex gap-2 bg-neutral-100 rounded-full px-2 w-fit">
+            {/* <div className="flex gap-2 bg-neutral-100 rounded-full px-2 w-fit">
                 <button onClick={() => editor.chain().focus().toggleBold().run()}
                     className={btn(editor.isActive('bold'))}>
                     <Bold size={20} />
@@ -43,10 +54,10 @@ export default function ComposerToolbar({ editor, onAttach }: { editor: Editor |
                     className={btn(editor.isActive('bulletList'))}>
                     <List size={20} />
                 </button>
-            </div>
+            </div> */}
             <div className='flex items-center gap-2'>
                 <label className="cursor-pointer p-2">
-                    <Paperclip size={20} />
+                    <Image03 className='text-neutral-700 size-5' />
                     <input
                         type="file"
                         accept=''
@@ -57,32 +68,35 @@ export default function ComposerToolbar({ editor, onAttach }: { editor: Editor |
                         }}
                     />
                 </label>
-                <button className='p-2'>
-                    <LetterSpacing01 className='size-5' />
-                </button>
                 <div className='relative'>
-                    <button onClick={() => setOpenEmoji(!openEmoji)} className='p-2'>
-                        <FaceSmile className='size-5' />
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            setOpenEmoji(!openEmoji)
+                        }}
+                        className='p-2'
+                    >
+                        <FaceSmile className='size-5 text-neutral-700' />
                     </button>
-                    <div className='absolute bottom-full left-0'>
-                        <EmojiPicker open={openEmoji} />
-                    </div>
+
+                    {openEmoji && (
+                        <div className='absolute bottom-full left-0 z-50'>
+                            <EmojiPicker
+                                onEmojiClick={(emojiData) => {
+                                    editor.chain().focus().insertContent(emojiData.emoji).run()
+                                    setOpenEmoji(false)
+                                }}
+                            />
+                        </div>
+                    )}
                 </div>
-                <button
-                    onClick={() => editor.chain().focus().toggleCode().run()}
-                    className={btn(editor.isActive('code'))}
-                >
-                    <Code01 className='size-5' />
-                </button>
-
-
                 <button className='p-2'>
-                    <AtSign className='size-5' />
-                </button>
-                <button className='p-2'>
-                    <UserPlus01 className='size-5' />
+                    <UsersPlus className='size-5' />
                 </button>
             </div>
+
+            <FellowshipSelect onChange={setFellowshipId} />
+            {/* <TestimonyEditor editor={editor} /> */}
         </section>
     )
 }

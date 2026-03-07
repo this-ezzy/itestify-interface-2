@@ -1,20 +1,18 @@
 // FooterActions.tsx
-import ShareIcon from "@/components/shared/Icons/mail-send-email--send-email-paper-airplane.svg"
-import ClockIcon from "@/components/shared/Icons/time_clock.svg"
+
 import { LoadingSpinner } from "../shared"
+import { PostIcon } from "../shared/Icons"
 import { Button } from "../ui/button"
 import { cn } from "@/lib/utils"
 
 export default function FooterActions({
     onPost,
-    onSchedule,
     disabled,
     isPosting,
     charCount,
     maxChar = 1500
 }: Readonly<{
     onPost: () => void
-    onSchedule?: () => void
     disabled?: boolean
     isPosting?: boolean
     charCount: number
@@ -27,15 +25,6 @@ export default function FooterActions({
                 {charCount}/{maxChar}
             </p>
             <div className="flex justify-between items-center gap-2">
-                {onSchedule && (
-                    <button
-                        onClick={onSchedule}
-                        className="text-sm text-neutral-600 font-medium flex justify-center items-center gap-2"
-                    >
-                        <ClockIcon />
-                        Schedule for later
-                    </button>
-                )}
 
                 <Button
                     variant="outline"
@@ -47,7 +36,7 @@ export default function FooterActions({
                         isPosting ?
                             <LoadingSpinner size={12} />
                             :
-                            <ShareIcon />
+                            <PostIcon />
                     }
                     Post
                 </Button>
