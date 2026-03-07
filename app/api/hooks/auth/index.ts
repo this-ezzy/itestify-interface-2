@@ -147,9 +147,10 @@ export const useGoogleCallback = () => {
             window.location.href = "/"
 
         },
-        onError: () => {
+        onError: (resp) => {
             toast.error("We could not complete your authentication, kindly try again later.")
-            window.location.href = "/"
+
+            // window.location.href = "/"
         }
     })
 }
