@@ -10,8 +10,8 @@ export default function TestimonyEditor({
     if (!editor) return null
 
     return (
-        <div className="p-3 overflow-auto">
-            <EditorContent editor={editor} placeholder='Share your testimony here for the world to hear...' />
+        <div className="px-3 overflow-auto">
+            <EditorContent editor={editor} autoFocus={true} />
         </div>
     )
 }

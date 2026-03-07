@@ -13,6 +13,7 @@ import { useGetProfile } from '@/app/api/hooks/user'
 import { toggleTestimonyModal } from '@/Redux/Slices/testimonySlice'
 import { toast } from 'sonner'
 import { useGetParams, useUpdateParams } from '@/hooks'
+import useAuthenticateUser from '@/hooks/useAuthenticateUser'
 
 const Navbar = () => {
     const { updateParams } = useUpdateParams()
@@ -24,6 +25,7 @@ const Navbar = () => {
     const isAuth = !!auth?.token
     const [searchTerm, setSearchTerm] = useState("")
     const { q } = useGetParams(["q"])
+    const { authenticateUser } = useAuthenticateUser()
 
     const handleLoginClick = () => {
         dispatch(toggleAuthModal())
@@ -38,11 +40,7 @@ const Navbar = () => {
     }
 
     const handleCreateTestimony = () => {
-        if (!auth?.token) {
-            toast.info("Kindly login to make a post")
-            dispatch(toggleShowAuthModal(true))
-            return
-        }
+        if (!authenticateUser()) return
         dispatch(toggleTestimonyModal())
     }
 
@@ -111,6 +109,7 @@ const Navbar = () => {
                                     <button className='rounded-full border size-10 shrink-0 flex items-center justify-center'>
                                         <AlertIcon />
                                     </button>
+                                    <div className='flex items-center gap-1'>
                                     <User03 />
                                     <p className='hidden md:flex'>{userProfile?.username}</p>
                                     <CustomDropDown
@@ -132,18 +131,18 @@ const Navbar = () => {
                                             { value: "logout", label: <span className="text-red-500">Logout</span> },
                                         ]}
                                         renderTrigger={() => (
-                                            <div className="flex items-center gap-1">
+
                                                 <ChevronDown />
-                                            </div>
+
                                         )}
                                         contentClassName="min-w-[120px]"
                                     />
+                                    </div>
                                 </div>
 
                                 :
 
                                 <div className='flex items-center gap-2'>
-
                                     <Button onClick={handleLoginClick} className='bg-neutral-100 hover:bg-neutral-100 cursor-pointer text-neutral-800 text-sm font-medium rounded-md h-10'>Log in</Button>
                                 </div>
                         }

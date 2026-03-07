@@ -232,3 +232,12 @@ input:-webkit-autofill:active {
   transition: background-color 9999s ease-in-out 0s;
   border-radius: 14px;
 }
+
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--neutral-300);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

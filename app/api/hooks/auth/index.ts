@@ -1,12 +1,13 @@
 import { storage } from "@/utils/storage"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { AuthLoginReq, AuthRegisterReq, AuthResponse, AuthVerifyReq } from "./types"
+import { AuthLoginReq, AuthRegisterReq, AuthResponse, AuthVerifyReq, GoogleLoginResp } from "./types"
 import { client, queryGetter, queryKeyGetter, querySetter } from "@/app/queryClient"
 import { jwtDecode } from "jwt-decode";
 import { API_URL } from "../../url";
 import { publicAxios } from "@/lib/Axios/public";
 import { QUERY_KEYS } from "../../queryKeys";
 import securedAxios from "@/lib/Axios/secured";
+import { toast } from "sonner";
 
 type SessionState = { auth?: Partial<AuthResponse> }
 
@@ -53,6 +54,17 @@ export const useLogin = () => {
     })
 }
 
+export const useRequestOtp = () => {
+    return useMutation({
+        mutationKey: [QUERY_KEYS.AUTH.REQUEST_OTP],
+        mutationFn: async () => {
+            const resp = securedAxios.get(API_URL.AUTH.REQUEST_OTP)
+            return resp
+        },
+        retry: false
+    })
+}
+
 export const useVerifyEmail = () => {
     return useMutation({
         mutationKey: [QUERY_KEYS.AUTH.VERIFY_EMAIL],
@@ -94,9 +106,38 @@ export const clientLogin = async (auth: Partial<AuthResponse>) => {
 export const clientLogout = async () => {
     storage.remove("auth")
     setSessionData("auth", undefined)
+    client.get().removeQueries()
 }
 
 export const logout = async (data: { refreshToken: string }) => {
     const result = await publicAxios({ url: API_URL.AUTH.LOGOUT, method: "POST", data })
     return result
+}
+
+
+export const useGoogleLogin = () => {
+    return useMutation({
+        mutationKey: [QUERY_KEYS.AUTH.GOOGLE_LOGIN],
+        mutationFn: async () => {
+            const result = await publicAxios<GoogleLoginResp>({ url: API_URL.AUTH.GOOGLE_LOGIN, method: "GET" })
+            return result.data
+        },
+        onSuccess: (resp) => {
+            const redirectUrl = resp.redirect_to
+            window.location.href = redirectUrl
+        },
+        onError: () => {
+            toast.error("Google login failed, try again later.")
+        }
+    })
+}
+
+export const useGoogleCallback = () => {
+    return useMutation({
+        mutationKey: [QUERY_KEYS.AUTH.GOOGLE_CALLBACK],
+        mutationFn: async (params: { code: string }) => {
+            const result = await publicAxios({ url: API_URL.AUTH.GOOGLE_CALLBACK, method: "POST", params })
+            return result
+        }
+    })
 }

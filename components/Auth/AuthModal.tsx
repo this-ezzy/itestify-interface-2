@@ -2,7 +2,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from '@/Redux/store'
 import CustomDialog from '../shared/Modals/CustomDialog'
-import { GoogleLogin } from '@react-oauth/google';
 import { setActiveAuthMethod, toggleAuthModal } from '@/Redux/Slices/authSlice'
 import { ActiveAuthModal } from '@/Redux/Interfaces/auth'
 import LoginForm from '@/components/Auth/LoginForm'
@@ -15,9 +14,13 @@ import { ArrowLeft } from '@untitled-ui/icons-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useGetParams, useUpdateParams } from '@/hooks';
+import { Button } from '../ui/button';
+import { useGoogleLogin } from '@/app/api/hooks/auth';
+
 
 
 const LoginModal = () => {
+    const { mutateAsync: handleGoogle, isPending } = useGoogleLogin()
     const { email } = useGetParams(["email"])
     const decodedEmail = decodeURIComponent(email)
     const { updateParams } = useUpdateParams()
@@ -96,6 +99,10 @@ const LoginModal = () => {
         return null
     }, [isVerifyEmail, isCompleteProfile, isJoinCommunity, activeAuthMethod, handleSetAuthMethod])
 
+    const googleLogin = async () => {
+        await handleGoogle()
+
+    }
     return (
         <CustomDialog
             isOpen={showAuthModal}
@@ -115,19 +122,9 @@ const LoginModal = () => {
                 showGoogleLogin &&
                 <div>
                     {/* Login form or content goes here */}
-                    <GoogleLogin
-                        onSuccess={credentialResponse => {
-                            console.log(credentialResponse);
-                        }}
-                        onError={() => {
-                            console.log('Login Failed');
-                        }}
-                        text='continue_with'
-
-                        logo_alignment='center'
-                        containerProps={{ className: 'rounded-xl! h-12!' }}
-
-                    />
+                        <Button onClick={googleLogin} className='w-full h-12 font-semibold text-neutral-900 text-base rounded-[12px]' loading={isPending} variant="outline">
+                            <Image src="/assets/devicon_google.svg" alt='Google icon' height={20} width={20} />
+                            Continue with Google</Button>
                     <div className='flex items-center gap-3 my-4'>
                         <div className='h-px border-neutral-300 border border-dashed  flex-1'></div>
                         <span className='text-sm text-neutral-500'>or continue with email</span>

@@ -12,10 +12,8 @@ import { estimateReadTime } from "@/utils/readTime"
 import CustomImage from "../CustomImage/CustomImage"
 import { useBookmarkTestimony, useDisLikeTestimony, useLikeTestimony, useRemoveBookmarkTestimony } from "@/app/api/hooks/testimony"
 import { Loader2 } from "lucide-react"
-import useAuth from "@/app/api/hooks/auth"
 import { Testimony } from "@/app/api/hooks/testimony/types"
-import { useAppDispatch } from "@/Redux/store"
-import { toggleAuthModal } from "@/Redux/Slices/authSlice"
+import useAuthenticateUser from "@/hooks/useAuthenticateUser"
 
 export type CardType = "compact" | "card"
 export type ActionType = "save" | "hide" | "report"
@@ -54,6 +52,7 @@ export default function PostCard({
     const { mutateAsync: handleRemoveBookmark, isPending: isRemovingBookmark } = useRemoveBookmarkTestimony()
     const { mutateAsync: handleLikeTestimony, isPending: isLiking } = useLikeTestimony()
     const { mutateAsync: handleDislikeTestimony, isPending: isDisliking } = useDisLikeTestimony()
+    const { authenticateUser } = useAuthenticateUser()
 
     const bookmarkItem = async () => {
         if (bookmarked) {
@@ -74,6 +73,7 @@ export default function PostCard({
     const handleAction = (e: Event, value: ActionType) => {
         e?.stopPropagation()
         e?.preventDefault()
+        if (!authenticateUser("continue this action")) return
         switch (value) {
             case "save":
                 bookmarkItem();
@@ -259,16 +259,12 @@ function ActionButton({
     readonly className?: string
         readonly onClick?: () => void
 }) {
-    const { data } = useAuth()
-    const dispatch = useAppDispatch()
+    const { authenticateUser } = useAuthenticateUser()
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation()
         e.preventDefault()
-        if (!data?.token) {
-            dispatch(toggleAuthModal())
-            return
-        }
+        if (!authenticateUser("continue this action")) return
         onClick?.()
     }
 

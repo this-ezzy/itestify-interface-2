@@ -5,7 +5,8 @@ export const API_URL = {
         VERIFY_ACCOUNT: "/account/verify",
         FORGOT_PASSWORD: "/auth/forgot-password",
         RESET_PASSWORD: "/auth/reset-password",
-        GOOGLE_LOGIN: "/v1/auth/google/login",
+        GOOGLE_LOGIN: "/auth/google/login",
+        GOOGLE_CALLBACK: "/auth/google/callback",
         REQUEST_OTP: "/account/request-otp",
         REFRESH_TOKEN: "",
         LOGOUT: ""
