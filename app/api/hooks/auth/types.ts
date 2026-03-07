@@ -15,6 +15,7 @@ export interface AuthUser {
     bio: string;
     avatar: string | null;
     email_verified_at: string | null;
+    is_verified: boolean
 }
 
 

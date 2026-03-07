@@ -53,6 +53,17 @@ export const useLogin = () => {
     })
 }
 
+export const useRequestOtp = () => {
+    return useMutation({
+        mutationKey: [QUERY_KEYS.AUTH.REQUEST_OTP],
+        mutationFn: async () => {
+            const resp = securedAxios.get(API_URL.AUTH.REQUEST_OTP)
+            return resp
+        },
+        retry: false
+    })
+}
+
 export const useVerifyEmail = () => {
     return useMutation({
         mutationKey: [QUERY_KEYS.AUTH.VERIFY_EMAIL],
@@ -94,6 +105,7 @@ export const clientLogin = async (auth: Partial<AuthResponse>) => {
 export const clientLogout = async () => {
     storage.remove("auth")
     setSessionData("auth", undefined)
+    client.get().removeQueries()
 }
 
 export const logout = async (data: { refreshToken: string }) => {

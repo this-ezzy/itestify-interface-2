@@ -17,7 +17,9 @@ import Image from 'next/image';
 import { useGetParams, useUpdateParams } from '@/hooks';
 
 
+
 const LoginModal = () => {
+
     const { email } = useGetParams(["email"])
     const decodedEmail = decodeURIComponent(email)
     const { updateParams } = useUpdateParams()
@@ -95,6 +97,7 @@ const LoginModal = () => {
         }
         return null
     }, [isVerifyEmail, isCompleteProfile, isJoinCommunity, activeAuthMethod, handleSetAuthMethod])
+
 
     return (
         <CustomDialog

@@ -1,22 +1,16 @@
 
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
+import axios, { AxiosError } from 'axios'
 import { createAxiosInstance } from './base'
 import { publicAxios } from './public'
-import appEnv from '@/env.mjs'
 import { API_URL } from '@/app/api/url'
-import { clientLogin, getAuth } from '@/app/api/hooks/auth'
+import { clientLogin, clientLogout, getAuth } from '@/app/api/hooks/auth'
 
-let isRefreshing = false
-let refreshPromise: Promise<string | null> | null = null
 
 /**
  * Axios instance for authenticated requests
  */
 export const securedAxios = createAxiosInstance()
 
-const retryAxios = axios.create({
-    baseURL: appEnv.NEXT_PUBLIC_APP_API_URL,
-})
 
 /**
  * Refresh access token (single-flight)
@@ -75,38 +69,9 @@ securedAxios.interceptors.response.use(
     (response) => response,
 
     async (error: AxiosError) => {
-        const originalRequest = error.config as InternalAxiosRequestConfig & { _retried?: boolean }
-
         // Only handle 401 errors
-        if (error.response?.status === 401 && !originalRequest._retried) {
-            originalRequest._retried = true
-
-            try {
-
-
-                // If no refresh is happening, start it
-                if (!isRefreshing) {
-                    isRefreshing = true
-                    refreshPromise = refreshToken()
-                }
-
-                // Wait for the refresh result (even if another request triggered it)
-                const newAccessToken = await refreshPromise
-                isRefreshing = false
-                refreshPromise = null
-
-                // If refresh failed, force logout
-                if (!newAccessToken) throw new Error("Unable to refresh token")
-
-                // Retry the original request with the new access token
-                originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`
-                return retryAxios(originalRequest)
-
-            } catch (refreshError) {
-                // Refresh failed → the user is no longer authenticated
-                await handleUnauthorizedError()
-                return Promise.reject(refreshError)
-            }
+        if (error.response?.status === 401) {
+            handleUnauthorizedError()
         }
 
         // handle api down error, when the server is unreachable
@@ -129,6 +94,6 @@ export default securedAxios
 
 
 export const handleUnauthorizedError = async () => {
-
+    await clientLogout()
     //Reload window to reset all state when session expires
 }

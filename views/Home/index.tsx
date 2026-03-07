@@ -11,18 +11,17 @@ import { useAppDispatch } from '@/Redux/store'
 import Link from 'next/link'
 import { CardType } from '@/components/shared/Feed/PostCard'
 import useInViewport from '@/hooks/useInViewPort'
-import { toggleShowAuthModal, updateShowNavTestimonyButton } from '@/Redux/Slices/appSlice'
+import { updateShowNavTestimonyButton } from '@/Redux/Slices/appSlice'
 import { useCreateTestimony, useGetTestimoniesByTopics, useGetTestimoniesFeed, useSearchTestimonies } from '@/app/api/hooks/testimony'
 import { TestimonyPayload } from '@/app/api/hooks/testimony/types'
-import useAuth from '@/app/api/hooks/auth'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import { useGetParams } from '@/hooks'
-
+import useAuthenticateUser from '@/hooks/useAuthenticateUser'
 
 const Index = () => {
+    const { authenticateUser } = useAuthenticateUser()
     const [sortBy, setSortBy] = useState<"trending" | "new" | "top">("trending")
-    const { data: auth } = useAuth()
     const [layout, setLayout] = useState<CardType>("card")
     const { topic, q } = useGetParams(["topic", "q"])
     const isTopicMode = Boolean(topic)
@@ -108,13 +107,11 @@ const Index = () => {
     const { mutateAsync: handleTestimonyUpload, isPending } = useCreateTestimony()
 
     const handleCreateTestimony = () => {
-        if (!auth?.token) {
-            toast.info("Kindly login to make a post")
-            dispatch(toggleShowAuthModal(true))
-            return
-        }
+        if (!authenticateUser()) return
         dispatch(toggleTestimonyModal())
     }
+
+
 
     useEffect(() => {
         if (isInViewport) {
