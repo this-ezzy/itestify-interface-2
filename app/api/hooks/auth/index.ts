@@ -136,8 +136,20 @@ export const useGoogleCallback = () => {
     return useMutation({
         mutationKey: [QUERY_KEYS.AUTH.GOOGLE_CALLBACK],
         mutationFn: async (params: { code: string }) => {
-            const result = await publicAxios({ url: API_URL.AUTH.GOOGLE_CALLBACK, method: "POST", params })
-            return result
+            const result = await publicAxios<AuthResponse>({ url: API_URL.AUTH.GOOGLE_CALLBACK, method: "POST", params })
+            return result.data
+        },
+        onSuccess: (resp) => {
+            clientLogin({
+                token: resp.token
+            })
+            toast.success("Welcome back!!!")
+            window.location.href = "/"
+
+        },
+        onError: () => {
+            toast.error("We could not complete your authentication, kindly try again later.")
+            window.location.href = "/"
         }
     })
 }
