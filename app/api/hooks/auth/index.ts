@@ -136,7 +136,7 @@ export const useGoogleCallback = () => {
     return useMutation({
         mutationKey: [QUERY_KEYS.AUTH.GOOGLE_CALLBACK],
         mutationFn: async (params: { code: string }) => {
-            const result = await publicAxios<AuthResponse>({ url: API_URL.AUTH.GOOGLE_CALLBACK, method: "POST", params })
+            const result = await publicAxios<AuthResponse>({ url: API_URL.AUTH.GOOGLE_CALLBACK, method: "GET", params })
             return result.data
         },
         onSuccess: (resp) => {
