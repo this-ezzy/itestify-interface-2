@@ -8,6 +8,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { useEffect, useState } from 'react';
 // import TestimonyEditor from './TestimonyEditor';
 import FellowshipSelect from './FellowshipSelect';
+import { CustomToolTip } from '../shared';
 
 interface Props {
     editor: Editor | null;
@@ -55,9 +56,18 @@ export default function ComposerToolbar({ editor, onAttach, setFellowshipId }: P
                     <List size={20} />
                 </button>
             </div> */}
-            <div className='flex items-center gap-2'>
-                <label className="cursor-pointer p-2">
+            <div className='flex items-center '>
+
+                <CustomToolTip trigger={
+                    <div className='p-2 flex items-center justify-center'>
+
                     <Image03 className='text-neutral-700 size-5' />
+                    </div>
+
+                }
+                    content="Upload media"
+                />
+
                     <input
                         type="file"
                         accept=''
@@ -67,9 +77,9 @@ export default function ComposerToolbar({ editor, onAttach, setFellowshipId }: P
                             if (e.target.files) onAttach(e.target.files)
                         }}
                     />
-                </label>
+
                 <div className='relative'>
-                    <button
+                    <CustomToolTip trigger={<button
                         onClick={(e) => {
                             e.stopPropagation()
                             setOpenEmoji(!openEmoji)
@@ -77,7 +87,10 @@ export default function ComposerToolbar({ editor, onAttach, setFellowshipId }: P
                         className='p-2'
                     >
                         <FaceSmile className='size-5 text-neutral-700' />
-                    </button>
+                    </button>}
+                        content="Emoji"
+                    />
+
 
                     {openEmoji && (
                         <div className='absolute bottom-full left-0 z-50'>
@@ -90,9 +103,14 @@ export default function ComposerToolbar({ editor, onAttach, setFellowshipId }: P
                         </div>
                     )}
                 </div>
-                <button className='p-2'>
+
+                <CustomToolTip trigger={<button className='p-2'>
                     <UsersPlus className='size-5' />
-                </button>
+                </button>}
+                    content="Add collaborators"
+                />
+
+
             </div>
 
             <FellowshipSelect onChange={setFellowshipId} />
