@@ -140,17 +140,17 @@ export const useGoogleCallback = () => {
             return result.data
         },
         onSuccess: (resp) => {
+            console.log(resp)
             clientLogin({
                 token: resp.token
             })
             toast.success("Welcome back!!!")
-            window.location.href = "/"
+            // window.location.href = "/"
 
         },
         onError: (resp) => {
             toast.error("We could not complete your authentication, kindly try again later.")
-
-            // window.location.href = "/"
+            window.location.href = "/"
         }
     })
 }
