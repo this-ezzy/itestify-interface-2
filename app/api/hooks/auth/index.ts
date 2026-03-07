@@ -91,7 +91,7 @@ export const getAuth = async () => {
     return await storage.get("auth") ?? null
 }
 
-export const clientLogin = async (auth: Partial<AuthResponse>) => {
+export const clientLogin = async (auth: Partial<AuthResponse>, redirect?: boolean) => {
 
     const { token } = auth
     if (!token) return
@@ -101,6 +101,9 @@ export const clientLogin = async (auth: Partial<AuthResponse>) => {
     await storage.set("auth", partialAuth, { expires: expiry })
     setSessionData("auth", partialAuth)
     client.get().invalidateQueries()
+    if (redirect) {
+        window.location.href = "/"
+    }
 }
 
 export const clientLogout = async () => {
@@ -143,9 +146,8 @@ export const useGoogleCallback = () => {
             console.log(resp)
             clientLogin({
                 token: resp.token
-            })
+            }, true)
             toast.success("Welcome back!!!")
-            // window.location.href = "/"
 
         },
         onError: (resp) => {
