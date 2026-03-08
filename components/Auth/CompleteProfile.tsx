@@ -68,6 +68,8 @@ const CompleteProfile = () => {
         )
     }
 
+    const invalidUsername = data?.length ? data?.length > 0 : false
+
     return (
         <div>
             <form
@@ -121,7 +123,7 @@ const CompleteProfile = () => {
 
                                     <div >
                                         {
-                                            data?.length && data?.length > 0 ?
+                                                invalidUsername ?
                                                 <span className='text-orange-400 text-sm'>Username not Available</span>
                                                 :
                                                 <span className='text-green-600 text-sm'>Username is Available</span>
@@ -150,7 +152,7 @@ const CompleteProfile = () => {
 
                 <Button
                     type="submit"
-                    disabled={isSubmitting || !isValid}
+                    disabled={isSubmitting || !isValid || invalidUsername}
                     loading={isSubmitting}
                     className="w-full mt-2.5 h-12 font-bold text-base rounded-2xl!"
                 >
