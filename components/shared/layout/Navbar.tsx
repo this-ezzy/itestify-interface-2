@@ -111,7 +111,7 @@ const Navbar = () => {
                                     </button>
                                     <div className='flex items-center gap-1'>
                                     <User03 />
-                                    <p className='hidden md:flex'>{userProfile?.username}</p>
+                                        <p className='hidden md:flex'>{userProfile?.username ?? userProfile?.email}</p>
                                     <CustomDropDown
                                         value={accountAction}
                                         align='end'

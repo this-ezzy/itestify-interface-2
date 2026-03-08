@@ -27,3 +27,14 @@ export const useUpdateProfile = () => {
         }
     })
 }
+
+export const useSearchUsername = ({ q }: { q: string }) => {
+    return useQuery({
+        queryKey: [QUERY_KEYS.USER.SEARCH_USERNAME, q],
+        queryFn: async () => {
+            const resp = await securedAxios.get<AuthUser[]>(`${API_URL.USER.SEARCH_USERS}?q=${q}`)
+            return resp.data
+        },
+        enabled: !!q
+    })
+}
