@@ -12,7 +12,8 @@ export const API_URL = {
         LOGOUT: ""
     },
     USER: {
-        PROFILE: "/account/profile"
+        PROFILE: "/account/profile",
+        SEARCH_USERS: "/search/users"
     },
     TESTIMONY: {
         GET_TESTIMONY_FEED: "/feed",

@@ -9,15 +9,18 @@ import { User01 } from '@untitled-ui/icons-react'
 
 import { useAppDispatch } from '@/Redux/store'
 import { setActiveAuthMethod } from '@/Redux/Slices/authSlice'
-import { useUpdateProfile } from '@/app/api/hooks/user'
+import { useSearchUsername, useUpdateProfile } from '@/app/api/hooks/user'
 import {
     CompleteProfileFormValues,
     completeProfileSchema,
 } from '@/utils/Schemas/register.schema'
+import { useDebounce } from '@/hooks'
+import { Skeleton } from '../ui/skeleton'
 
 const CompleteProfile = () => {
     const dispatch = useAppDispatch()
     const { mutateAsync: handleUpdateProfile } = useUpdateProfile()
+
 
     const {
         register,
@@ -33,6 +36,18 @@ const CompleteProfile = () => {
     const bio = useWatch({
         control,
         name: 'bio',
+    })
+
+
+    const username = useWatch({
+        control,
+        name: "userName",
+    })
+
+    const debouncedUsername = useDebounce(username, 500)
+
+    const { data, isLoading } = useSearchUsername({
+        q: debouncedUsername,
     })
 
     const textFieldCharCount = bio?.length ?? 0
@@ -83,6 +98,7 @@ const CompleteProfile = () => {
                     />
                 </div>
 
+                <div>
                 <InputField
                     preIcon={<>@</>}
                     label="Username"
@@ -92,7 +108,29 @@ const CompleteProfile = () => {
                     required
                     {...register('userName')}
                     error={errors.userName?.message}
-                />
+                    />
+                    {
+                        !!debouncedUsername &&
+
+                        <div className='mt-2'>
+
+                            {
+                                isLoading ?
+                                    <Skeleton className='h-4  rounded-sm ' />
+                                    :
+
+                                    <div >
+                                        {
+                                            data?.length && data?.length > 0 ?
+                                                <span className='text-orange-400 text-sm'>Username not Available</span>
+                                                :
+                                                <span className='text-green-600 text-sm'>Username is Available</span>
+                                        }
+                                    </div>
+                            }
+                        </div>
+                    }
+                </div>
 
                 <TextAreaField
                     label={
